@@ -95,8 +95,9 @@ dependencies {
 
     implementation deps.androidx.multidex
 
-    implementation 'org.eclipse.paho:org.eclipse.paho.android.service:1.1.1'
-    implementation 'org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.2.0'
+    implementation 'com.github.xuexiangjys.XPush:xpush-core:1.0.1'
+    implementation project(path: ':xpush-mqtt')
+
 
     //XUI框架
     implementation 'com.github.xuexiangjys:XUI:1.1.1'
