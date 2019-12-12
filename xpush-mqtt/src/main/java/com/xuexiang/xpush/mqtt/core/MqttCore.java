@@ -22,9 +22,12 @@ import android.text.TextUtils;
 
 import org.eclipse.paho.android.service.MqttAndroidClient;
 import org.eclipse.paho.client.mqttv3.IMqttActionListener;
+import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.IMqttToken;
+import org.eclipse.paho.client.mqttv3.MqttCallbackExtended;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
+import org.eclipse.paho.client.mqttv3.MqttMessage;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -36,12 +39,7 @@ import java.util.Map;
  * @author xuexiang
  * @since 2019-12-11 22:41
  */
-public class MqttCore implements IMqttActionListener {
-
-    /**
-     * 客户端标识
-     */
-    private String mClientId;
+public class MqttCore implements IMqttActionListener, MqttCallbackExtended {
 
     /**
      * 客户端
@@ -55,7 +53,7 @@ public class MqttCore implements IMqttActionListener {
     /**
      * 连接状态
      */
-    private ConnectionStatus mStatus;
+    private ConnectionStatus mConnectionStatus = ConnectionStatus.NONE;
     /**
      * 客户端操作
      */
@@ -66,6 +64,7 @@ public class MqttCore implements IMqttActionListener {
      */
     private final Map<String, Subscription> mSubscriptions = new HashMap<>();
 
+    private OnMqttListener mOnMqttListener;
 
     /**
      * 构建
@@ -73,7 +72,6 @@ public class MqttCore implements IMqttActionListener {
      * @param builder
      */
     private MqttCore(Builder builder) {
-        mClientId = builder.clientId;
         String uri;
         if (builder.isUseTls) {
             uri = "ssl://" + builder.host + ":" + builder.port;
@@ -81,8 +79,12 @@ public class MqttCore implements IMqttActionListener {
             uri = "tcp://" + builder.host + ":" + builder.port;
         }
         mClient = new MqttAndroidClient(builder.context, uri, builder.clientId);
+        mClient.setCallback(this);
+        mClient.setTraceCallback(new XPushTraceCallback());
+        mClient.setTraceEnabled(true);
 
         mOptions = new MqttConnectOptions();
+        mOptions.setAutomaticReconnect(builder.automaticReconnect);
         if (!TextUtils.isEmpty(builder.userName)) {
             mOptions.setUserName(builder.userName);
         }
@@ -98,6 +100,7 @@ public class MqttCore implements IMqttActionListener {
         if (builder.willMessage != null) {
             mOptions.setWill(builder.willMessage.getTopic(), builder.willMessage.getMessage().getBytes(), builder.willMessage.getQos(), builder.willMessage.isRetain());
         }
+
     }
 
     //==========================初始化================================//
@@ -149,6 +152,18 @@ public class MqttCore implements IMqttActionListener {
         if (options != null) {
             mOptions = options;
         }
+        return this;
+    }
+
+    public MqttCore setTraceEnabled(boolean traceEnabled) {
+        if (mClient != null) {
+            mClient.setTraceEnabled(traceEnabled);
+        }
+        return this;
+    }
+
+    public MqttCore setOnMqttListener(OnMqttListener onMqttListener) {
+        mOnMqttListener = onMqttListener;
         return this;
     }
 
@@ -204,7 +219,7 @@ public class MqttCore implements IMqttActionListener {
     }
 
 
-    //============================动作===============================//
+    //============================对外开放的动作===============================//
 
     /**
      * 建立连接
@@ -217,7 +232,7 @@ public class MqttCore implements IMqttActionListener {
         }
 
         try {
-            mStatus = ConnectionStatus.CONNECTING;
+            changeConnectionStatus(ConnectionStatus.CONNECTING);
             mAction = MqttAction.CONNECT;
             mClient.connect(mOptions, null, this);
             return true;
@@ -225,6 +240,24 @@ public class MqttCore implements IMqttActionListener {
             e.printStackTrace();
         }
         return false;
+    }
+
+    /**
+     * 建立连接
+     *
+     * @param listener 动作监听
+     * @return
+     */
+    public void connect(IMqttActionListener listener) {
+        if (mClient == null) {
+            return;
+        }
+        try {
+            changeConnectionStatus(ConnectionStatus.CONNECTING);
+            mClient.connect(mOptions, null, listener);
+        } catch (MqttException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -238,7 +271,7 @@ public class MqttCore implements IMqttActionListener {
         }
 
         try {
-            mStatus = ConnectionStatus.DISCONNECTING;
+            changeConnectionStatus(ConnectionStatus.DISCONNECTING);
             mAction = MqttAction.DISCONNECT;
             mClient.disconnect(null, this);
             return true;
@@ -247,6 +280,78 @@ public class MqttCore implements IMqttActionListener {
         }
         return false;
     }
+
+    /**
+     * 断开连接
+     *
+     * @return
+     */
+    public void disconnect(IMqttActionListener listener) {
+        if (mClient == null) {
+            return;
+        }
+
+        try {
+            changeConnectionStatus(ConnectionStatus.DISCONNECTING);
+            mClient.disconnect(null, listener);
+        } catch (MqttException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * 订阅主题【对外API】
+     *
+     * @param subscription
+     * @param listener     动作监听
+     */
+    public void subscribe(Subscription subscription, IMqttActionListener listener) {
+        if (mClient == null || subscription == null) {
+            return;
+        }
+        try {
+            mClient.subscribe(subscription.getTopic(), subscription.getQos(), null, listener);
+        } catch (MqttException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * 取消订阅主题【对外API】
+     *
+     * @param subscription
+     * @param listener     动作监听
+     */
+    public void unsubscribe(Subscription subscription, IMqttActionListener listener) {
+        if (mClient == null || subscription == null) {
+            return;
+        }
+        try {
+            mClient.unsubscribe(subscription.getTopic(), null, listener);
+        } catch (MqttException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * 发布主题【对外API】
+     *
+     * @param publishMessage
+     * @param listener       动作监听
+     */
+    public void publish(PublishMessage publishMessage, IMqttActionListener listener) {
+        if (mClient == null || publishMessage == null) {
+            return;
+        }
+
+        try {
+            mClient.publish(publishMessage.getTopic(), publishMessage.getMessage().getBytes(), publishMessage.getQos(), publishMessage.isRetain(), null, listener);
+        } catch (MqttException e) {
+            e.printStackTrace();
+        }
+    }
+
+    //===================================内部动作========================================//
 
     /**
      * 订阅主题
@@ -282,7 +387,6 @@ public class MqttCore implements IMqttActionListener {
         return false;
     }
 
-
     /**
      * 取消订阅主题
      *
@@ -317,7 +421,6 @@ public class MqttCore implements IMqttActionListener {
         return false;
     }
 
-
     /**
      * 发布主题
      *
@@ -348,18 +451,36 @@ public class MqttCore implements IMqttActionListener {
         return false;
     }
 
-
-    //===========================================================//
-
+    //===========================监听事件================================//
 
     @Override
     public void onSuccess(IMqttToken asyncActionToken) {
         switch (mAction) {
             case CONNECT:
-                handleConnectSuccess();
+                changeConnectionStatus(ConnectionStatus.CONNECTED);
                 break;
             case DISCONNECT:
+                changeConnectionStatus(ConnectionStatus.DISCONNECTED);
+                break;
+            case SUBSCRIBE:
 
+                break;
+            case PUBLISH:
+
+                break;
+            default:
+                break;
+        }
+    }
+
+    @Override
+    public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
+        switch (mAction) {
+            case CONNECT:
+                changeConnectionStatus(ConnectionStatus.ERROR);
+                break;
+            case DISCONNECT:
+                changeConnectionStatus(ConnectionStatus.DISCONNECTED);
                 break;
             case SUBSCRIBE:
 
@@ -373,35 +494,40 @@ public class MqttCore implements IMqttActionListener {
     }
 
     /**
-     * 处理连接成功
+     * 连接状态改变
+     *
+     * @param newStatus 新状态
      */
-    private void handleConnectSuccess() {
-        mStatus = ConnectionStatus.CONNECTED;
+    private void changeConnectionStatus(ConnectionStatus newStatus) {
+        if (mConnectionStatus != newStatus) {
+            if (mOnMqttListener != null) {
+                mOnMqttListener.onConnectionStatusChanged(mConnectionStatus, newStatus);
+            }
+            mConnectionStatus = newStatus;
+        }
+    }
 
+    @Override
+    public void connectComplete(boolean reconnect, String serverURI) {
+        changeConnectionStatus(ConnectionStatus.CONNECTED);
         //连接成功后注册订阅
         registerAllSubscriptions();
     }
 
     @Override
-    public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
-        switch (mAction) {
-            case CONNECT:
+    public void connectionLost(Throwable cause) {
 
-                break;
-            case DISCONNECT:
-
-                break;
-            case SUBSCRIBE:
-
-                break;
-            case PUBLISH:
-
-                break;
-            default:
-                break;
-        }
     }
 
+    @Override
+    public void messageArrived(String topic, MqttMessage message) throws Exception {
+
+    }
+
+    @Override
+    public void deliveryComplete(IMqttDeliveryToken token) {
+
+    }
 
     //============================状态获取===============================//
 
@@ -409,7 +535,7 @@ public class MqttCore implements IMqttActionListener {
      * @return 获取连接状态
      */
     public ConnectionStatus getConnectionStatus() {
-        return mStatus;
+        return mConnectionStatus;
     }
 
     public MqttAndroidClient getClient() {
@@ -421,7 +547,7 @@ public class MqttCore implements IMqttActionListener {
     }
 
     public String getClientId() {
-        return mClientId;
+        return mClient != null ? mClient.getClientId() : "";
     }
 
     public Map<String, Subscription> getSubscriptions() {
@@ -482,6 +608,10 @@ public class MqttCore implements IMqttActionListener {
          * 保持心跳连接的时间
          */
         int keepAlive;
+        /**
+         * 自动重新连接
+         */
+        boolean automaticReconnect;
         /**
          * 客户端连接丢失时服务端向自己发送的主题消息
          */

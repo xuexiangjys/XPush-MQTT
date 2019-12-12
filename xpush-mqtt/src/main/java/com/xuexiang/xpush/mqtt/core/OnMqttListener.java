@@ -15,35 +15,20 @@
  *
  */
 
-package com.xuexiang.mqttdemo.fragment;
-
-import com.xuexiang.mqttdemo.R;
-import com.xuexiang.mqttdemo.core.BaseFragment;
-import com.xuexiang.xpage.annotation.Page;
+package com.xuexiang.xpush.mqtt.core;
 
 /**
- *
  * @author xuexiang
- * @since 2019-07-08 00:52
+ * @since 2019-12-12 17:31
  */
-@Page(name = "MQTT连接")
-public class ConnectFragment extends BaseFragment {
+public interface OnMqttListener {
 
     /**
-     * 布局的资源id
+     * 连接状态发生改变
      *
-     * @return
+     * @param oldStatus
+     * @param newStatus
      */
-    @Override
-    protected int getLayoutId() {
-        return R.layout.fragment_connect;
-    }
+    void onConnectionStatusChanged(ConnectionStatus oldStatus, ConnectionStatus newStatus);
 
-    /**
-     * 初始化控件
-     */
-    @Override
-    protected void initViews() {
-
-    }
 }

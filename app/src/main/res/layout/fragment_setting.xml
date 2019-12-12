@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+  ~ Copyright (C) 2019 xuexiangjys(xuexiangjys@163.com)
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~       http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  ~
+  -->
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <androidx.core.widget.NestedScrollView style="@style/ScrollViewStyle">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_margin="16dp"
+            android:orientation="vertical">
+
+            <TextView
+                style="@style/TextStyle.Title"
+                android:text="通用" />
+
+            <com.xuexiang.xui.widget.edittext.materialedittext.MaterialEditText
+                android:id="@+id/met_client_id"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="?attr/xui_config_content_spacing_vertical"
+                android:hint="请输入Client ID"
+                app:met_clearButton="true"
+                app:met_floatingLabel="highlight"
+                app:met_floatingLabelText="Client ID"
+                app:met_floatingLabelTextSize="12sp" />
+
+            <com.xuexiang.xui.widget.edittext.materialedittext.MaterialEditText
+                android:id="@+id/met_host"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="?attr/xui_config_content_spacing_vertical"
+                android:hint="请输入服务器的IP地址"
+                app:met_allowEmpty="false"
+                app:met_clearButton="true"
+                app:met_floatingLabel="highlight"
+                app:met_floatingLabelText="Server Host"
+                app:met_floatingLabelTextSize="12sp" />
+
+            <com.xuexiang.xui.widget.edittext.materialedittext.MaterialEditText
+                android:id="@+id/met_port"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="?attr/xui_config_content_spacing_vertical"
+                android:hint="请输入服务器的端口号"
+                android:inputType="number"
+                app:met_clearButton="true"
+                app:met_floatingLabel="highlight"
+                app:met_floatingLabelText="Server Port"
+                app:met_floatingLabelTextSize="12sp" />
+
+            <TextView
+                style="@style/TextStyle.Title"
+                android:layout_marginTop="16dp"
+                android:text="高级" />
+
+            <com.xuexiang.xui.widget.edittext.materialedittext.MaterialEditText
+                android:id="@+id/met_username"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="?attr/xui_config_content_spacing_vertical"
+                android:hint="请输入用户名"
+                app:met_clearButton="true"
+                app:met_floatingLabel="highlight"
+                app:met_floatingLabelText="UserName"
+                app:met_floatingLabelTextSize="12sp" />
+
+
+            <com.xuexiang.xui.widget.edittext.materialedittext.MaterialEditText
+                android:id="@+id/met_password"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="?attr/xui_config_content_spacing_vertical"
+                android:hint="请输入密码"
+                app:met_floatingLabel="highlight"
+                app:met_floatingLabelText="Password"
+                app:met_floatingLabelTextSize="12sp"
+                app:met_passWordButton="true" />
+
+            <com.xuexiang.xui.widget.edittext.materialedittext.MaterialEditText
+                android:id="@+id/met_timeout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="?attr/xui_config_content_spacing_vertical"
+                android:hint="请输入连接超时时间（秒）"
+                android:inputType="number"
+                app:met_clearButton="true"
+                app:met_floatingLabel="highlight"
+                app:met_floatingLabelText="Timeout"
+                app:met_floatingLabelTextSize="12sp" />
+
+            <com.xuexiang.xui.widget.edittext.materialedittext.MaterialEditText
+                android:id="@+id/met_keep_alive"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="?attr/xui_config_content_spacing_vertical"
+                android:hint="请输入心跳保持间隔（秒）"
+                android:inputType="number"
+                app:met_clearButton="true"
+                app:met_floatingLabel="highlight"
+                app:met_floatingLabelText="KeepAlive"
+                app:met_floatingLabelTextSize="12sp" />
+
+        </LinearLayout>
+
+    </androidx.core.widget.NestedScrollView>
+
+</LinearLayout>

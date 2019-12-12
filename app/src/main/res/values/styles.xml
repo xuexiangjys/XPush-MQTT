@@ -12,6 +12,8 @@
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
+        <item name="xui_config_size_edittext_helper_text">10sp</item>
+
     </style>
 
     <!--DialogTheme，用于将Activity作为Dialog的主题-->
