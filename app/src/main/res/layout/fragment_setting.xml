@@ -71,7 +71,7 @@
             <TextView
                 style="@style/TextStyle.Title"
                 android:layout_marginTop="16dp"
-                android:text="高级" />
+                android:text="高级(选填)" />
 
             <com.xuexiang.xui.widget.edittext.materialedittext.MaterialEditText
                 android:id="@+id/met_username"

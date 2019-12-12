@@ -17,11 +17,15 @@
 
 package com.xuexiang.xpush.mqtt.core;
 
+import org.eclipse.paho.client.mqttv3.MqttMessage;
+
 /**
+ * MQTT事件监听器
+ *
  * @author xuexiang
  * @since 2019-12-12 17:31
  */
-public interface OnMqttListener {
+public interface OnMqttEventListener {
 
     /**
      * 连接状态发生改变
@@ -31,4 +35,34 @@ public interface OnMqttListener {
      */
     void onConnectionStatusChanged(ConnectionStatus oldStatus, ConnectionStatus newStatus);
 
+    /**
+     * 连接完成
+     *
+     * @param reconnect 是否是重连
+     * @param serverUri 连接的服务器地址
+     */
+    void onConnectComplete(boolean reconnect, String serverUri);
+
+    /**
+     * 连接丢失，是否需要手动重新连接
+     *
+     * @param cause
+     * @return true:重新连接，false：不重新连接
+     */
+    boolean onConnectionLost(Throwable cause);
+
+    /**
+     * 收到消息
+     *
+     * @param topic   主题
+     * @param message 消息
+     */
+    void onMessageReceived(String topic, MqttMessage message);
+
+    /**
+     * 消息发送成功
+     *
+     * @param message 消息
+     */
+    void onMessageDelivered(MqttMessage message);
 }

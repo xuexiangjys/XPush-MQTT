@@ -97,6 +97,7 @@ dependencies {
 
     implementation 'com.github.xuexiangjys.XPush:xpush-core:1.0.1'
     implementation project(path: ':xpush-mqtt')
+    implementation 'org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.2.0'
 
 
     //XUI框架
@@ -112,6 +113,8 @@ dependencies {
     implementation 'com.github.xuexiangjys.XAOP:xaop-runtime:1.0.5x'
     //屏幕适配AutoSize
     implementation 'me.jessyan:autosize:1.1.2'
+    //腾讯的键值对存储mmkv
+    implementation 'com.tencent:mmkv:1.0.22'
     //XPage
     implementation 'com.github.xuexiangjys.XPage:xpage-lib:2.2.8'
     annotationProcessor 'com.github.xuexiangjys.XPage:xpage-compiler:2.2.8'

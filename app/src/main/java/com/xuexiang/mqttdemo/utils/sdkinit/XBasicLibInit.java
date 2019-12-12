@@ -21,6 +21,7 @@ import android.app.Application;
 
 import com.xuexiang.mqttdemo.MyApp;
 import com.xuexiang.mqttdemo.core.BaseActivity;
+import com.xuexiang.mqttdemo.utils.MMKVUtils;
 import com.xuexiang.mqttdemo.utils.XToastUtils;
 import com.xuexiang.xaop.XAOP;
 import com.xuexiang.xpage.AppPageConfig;
@@ -68,6 +69,7 @@ public final class XBasicLibInit {
     private static void initXUtil(Application application) {
         XUtil.init(application);
         XUtil.debug(MyApp.isDebug());
+        MMKVUtils.init(application);
     }
 
     /**

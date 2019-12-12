@@ -18,6 +18,8 @@
 package com.xuexiang.xpush.mqtt.core;
 
 import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
 import android.text.TextUtils;
 
 import org.eclipse.paho.android.service.MqttAndroidClient;
@@ -34,7 +36,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * MQTT API
+ * MQTT Core API
  *
  * @author xuexiang
  * @since 2019-12-11 22:41
@@ -64,7 +66,16 @@ public class MqttCore implements IMqttActionListener, MqttCallbackExtended {
      */
     private final Map<String, Subscription> mSubscriptions = new HashMap<>();
 
-    private OnMqttListener mOnMqttListener;
+    /**
+     * MQTT事件监听器
+     */
+    private OnMqttEventListener mOnMqttEventListener;
+
+    private Handler mHandler;
+    /**
+     * 手动重连的延迟时间，默认是5秒
+     */
+    private long mReconnectDelay = 5 * 1000L;
 
     /**
      * 构建
@@ -83,24 +94,35 @@ public class MqttCore implements IMqttActionListener, MqttCallbackExtended {
         mClient.setTraceCallback(new XPushTraceCallback());
         mClient.setTraceEnabled(true);
 
-        mOptions = new MqttConnectOptions();
-        mOptions.setAutomaticReconnect(builder.automaticReconnect);
+        mOptions = getConnectOptions(builder);
+        mHandler = new Handler(Looper.getMainLooper());
+    }
+
+    /**
+     * 获取连接参数
+     *
+     * @param builder
+     * @return
+     */
+    private MqttConnectOptions getConnectOptions(Builder builder) {
+        MqttConnectOptions options = new MqttConnectOptions();
+        options.setAutomaticReconnect(builder.automaticReconnect);
         if (!TextUtils.isEmpty(builder.userName)) {
-            mOptions.setUserName(builder.userName);
+            options.setUserName(builder.userName);
         }
         if (!TextUtils.isEmpty(builder.passWord)) {
-            mOptions.setPassword(builder.passWord.toCharArray());
+            options.setPassword(builder.passWord.toCharArray());
         }
         if (builder.timeout != 0) {
-            mOptions.setConnectionTimeout(builder.timeout);
+            options.setConnectionTimeout(builder.timeout);
         }
         if (builder.keepAlive != 0) {
-            mOptions.setKeepAliveInterval(builder.keepAlive);
+            options.setKeepAliveInterval(builder.keepAlive);
         }
         if (builder.willMessage != null) {
-            mOptions.setWill(builder.willMessage.getTopic(), builder.willMessage.getMessage().getBytes(), builder.willMessage.getQos(), builder.willMessage.isRetain());
+            options.setWill(builder.willMessage.getTopic(), builder.willMessage.getMessage().getBytes(), builder.willMessage.getQos(), builder.willMessage.isRetain());
         }
-
+        return options;
     }
 
     //==========================初始化================================//
@@ -162,8 +184,25 @@ public class MqttCore implements IMqttActionListener, MqttCallbackExtended {
         return this;
     }
 
-    public MqttCore setOnMqttListener(OnMqttListener onMqttListener) {
-        mOnMqttListener = onMqttListener;
+    /**
+     * 设置MQTT事件监听器
+     *
+     * @param onMqttEventListener
+     * @return
+     */
+    public MqttCore setOnMqttEventListener(OnMqttEventListener onMqttEventListener) {
+        mOnMqttEventListener = onMqttEventListener;
+        return this;
+    }
+
+    /**
+     * 设置手动重连的延迟时间
+     *
+     * @param reconnectDelay
+     * @return
+     */
+    public MqttCore setReconnectDelay(long reconnectDelay) {
+        mReconnectDelay = reconnectDelay;
         return this;
     }
 
@@ -351,6 +390,49 @@ public class MqttCore implements IMqttActionListener, MqttCallbackExtended {
         }
     }
 
+    /**
+     * 销毁【必须先断开连接】
+     */
+    public void close() {
+        if (mClient != null) {
+            if (!mClient.isConnected()) {
+                recycle();
+            } else {
+                try {
+                    mClient.disconnect(null, new IMqttActionListener() {
+                        @Override
+                        public void onSuccess(IMqttToken asyncActionToken) {
+                            recycle();
+                        }
+
+                        @Override
+                        public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
+                            recycle();
+                        }
+                    });
+                } catch (MqttException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    /**
+     * 资源回收
+     */
+    private void recycle() {
+        mClient.close();
+        mClient.unregisterResources();
+        mClient = null;
+        mHandler.removeCallbacksAndMessages(null);
+        mHandler = null;
+        mOnMqttEventListener = null;
+        mOptions = null;
+        mConnectionStatus = null;
+        mAction = null;
+        mSubscriptions.clear();
+    }
+
     //===================================内部动作========================================//
 
     /**
@@ -458,15 +540,14 @@ public class MqttCore implements IMqttActionListener, MqttCallbackExtended {
         switch (mAction) {
             case CONNECT:
                 changeConnectionStatus(ConnectionStatus.CONNECTED);
+                //连接成功后注册订阅
+                registerAllSubscriptions();
                 break;
             case DISCONNECT:
                 changeConnectionStatus(ConnectionStatus.DISCONNECTED);
                 break;
             case SUBSCRIBE:
-
-                break;
             case PUBLISH:
-
                 break;
             default:
                 break;
@@ -483,10 +564,7 @@ public class MqttCore implements IMqttActionListener, MqttCallbackExtended {
                 changeConnectionStatus(ConnectionStatus.DISCONNECTED);
                 break;
             case SUBSCRIBE:
-
-                break;
             case PUBLISH:
-
                 break;
             default:
                 break;
@@ -500,8 +578,8 @@ public class MqttCore implements IMqttActionListener, MqttCallbackExtended {
      */
     private void changeConnectionStatus(ConnectionStatus newStatus) {
         if (mConnectionStatus != newStatus) {
-            if (mOnMqttListener != null) {
-                mOnMqttListener.onConnectionStatusChanged(mConnectionStatus, newStatus);
+            if (mOnMqttEventListener != null) {
+                mOnMqttEventListener.onConnectionStatusChanged(mConnectionStatus, newStatus);
             }
             mConnectionStatus = newStatus;
         }
@@ -510,23 +588,53 @@ public class MqttCore implements IMqttActionListener, MqttCallbackExtended {
     @Override
     public void connectComplete(boolean reconnect, String serverURI) {
         changeConnectionStatus(ConnectionStatus.CONNECTED);
-        //连接成功后注册订阅
-        registerAllSubscriptions();
+        if (mOnMqttEventListener != null) {
+            mOnMqttEventListener.onConnectComplete(reconnect, serverURI);
+        }
     }
 
     @Override
     public void connectionLost(Throwable cause) {
+        changeConnectionStatus(ConnectionStatus.DISCONNECTED);
+        if (mOnMqttEventListener != null) {
+            boolean isNeedReconnect = mOnMqttEventListener.onConnectionLost(cause);
+            if (isNeedReconnect && !mOptions.isAutomaticReconnect()) {
+                reconnect();
+            }
+        }
+    }
 
+    /**
+     * 重新连接
+     */
+    private void reconnect() {
+        if (mHandler != null) {
+            //手动连接
+            mHandler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    connect();
+                }
+            }, mReconnectDelay);
+        }
     }
 
     @Override
     public void messageArrived(String topic, MqttMessage message) throws Exception {
-
+        if (mOnMqttEventListener != null) {
+            mOnMqttEventListener.onMessageReceived(topic, message);
+        }
     }
 
     @Override
     public void deliveryComplete(IMqttDeliveryToken token) {
-
+        if (mOnMqttEventListener != null) {
+            try {
+                mOnMqttEventListener.onMessageDelivered(token.getMessage());
+            } catch (MqttException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     //============================状态获取===============================//
@@ -556,6 +664,11 @@ public class MqttCore implements IMqttActionListener, MqttCallbackExtended {
 
     public MqttAction getAction() {
         return mAction;
+    }
+
+
+    public boolean isConnected() {
+        return mClient != null && mClient.isConnected();
     }
 
     //===========================构建者================================//
@@ -609,7 +722,7 @@ public class MqttCore implements IMqttActionListener, MqttCallbackExtended {
          */
         int keepAlive;
         /**
-         * 自动重新连接
+         * 自动重新连接,每隔1秒重连一次，如果失败则延长1倍时间，直到间隔为2分钟为止
          */
         boolean automaticReconnect;
         /**

@@ -24,6 +24,7 @@ import androidx.multidex.MultiDex;
 
 import com.xuexiang.mqttdemo.utils.sdkinit.UMengInit;
 import com.xuexiang.mqttdemo.utils.sdkinit.XBasicLibInit;
+import com.xuexiang.xpush.XPush;
 
 /**
  * @author xuexiang
@@ -50,6 +51,8 @@ public class MyApp extends Application {
     private void initLibs() {
         XBasicLibInit.init(this);
 
+        initXPush();
+
         //运营统计数据运行时不初始化
         if (!MyApp.isDebug()) {
             UMengInit.init(this);
@@ -65,4 +68,8 @@ public class MyApp extends Application {
     }
 
 
+    public void initXPush() {
+        XPush.init(this);
+        XPush.debug(MyApp.isDebug());
+    }
 }
