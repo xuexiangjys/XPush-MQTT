@@ -17,16 +17,57 @@
 
 package com.xuexiang.xpush.mqtt.core;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 /**
  * 订阅信息
  *
  * @author xuexiang
  * @since 2019-12-12 00:16
  */
-public class Subscription {
+public class Subscription implements Parcelable {
 
+    /**
+     * 主题
+     */
     private String mTopic;
+    /**
+     * 质量
+     */
     private int mQos;
+
+    protected Subscription(Parcel in) {
+        mTopic = in.readString();
+        mQos = in.readInt();
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(mTopic);
+        dest.writeInt(mQos);
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    public static final Creator<Subscription> CREATOR = new Creator<Subscription>() {
+        @Override
+        public Subscription createFromParcel(Parcel in) {
+            return new Subscription(in);
+        }
+
+        @Override
+        public Subscription[] newArray(int size) {
+            return new Subscription[size];
+        }
+    };
+
+    public static Subscription wrap(String topic) {
+        return new Subscription(topic);
+    }
 
     public Subscription(String topic) {
         mTopic = topic;
@@ -57,9 +98,6 @@ public class Subscription {
 
     @Override
     public String toString() {
-        return "Subscription{" +
-                "mTopic='" + mTopic + '\'' +
-                ", mQos=" + mQos +
-                '}';
+        return mTopic;
     }
 }

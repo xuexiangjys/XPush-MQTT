@@ -17,13 +17,16 @@
 
 package com.xuexiang.xpush.mqtt.core;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 /**
  * 发布的主题消息
  *
  * @author xuexiang
  * @since 2019-12-12 00:45
  */
-public class PublishMessage {
+public class PublishMessage implements Parcelable {
 
     /**
      * 主题
@@ -41,6 +44,25 @@ public class PublishMessage {
      * 是否保持
      */
     private boolean mRetain;
+
+    protected PublishMessage(Parcel in) {
+        mTopic = in.readString();
+        mMessage = in.readString();
+        mQos = in.readInt();
+        mRetain = in.readByte() != 0;
+    }
+
+    public static final Creator<PublishMessage> CREATOR = new Creator<PublishMessage>() {
+        @Override
+        public PublishMessage createFromParcel(Parcel in) {
+            return new PublishMessage(in);
+        }
+
+        @Override
+        public PublishMessage[] newArray(int size) {
+            return new PublishMessage[size];
+        }
+    };
 
     public static PublishMessage get(String topic, String message) {
         return new PublishMessage(topic, message);
@@ -89,11 +111,19 @@ public class PublishMessage {
 
     @Override
     public String toString() {
-        return "PublishMessage{" +
-                "mTopic='" + mTopic + '\'' +
-                ", mMessage='" + mMessage + '\'' +
-                ", mQos=" + mQos +
-                ", mRetain=" + mRetain +
-                '}';
+        return "[" + mTopic + "] " + mMessage;
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(mTopic);
+        dest.writeString(mMessage);
+        dest.writeInt(mQos);
+        dest.writeByte((byte) (mRetain ? 1 : 0));
     }
 }

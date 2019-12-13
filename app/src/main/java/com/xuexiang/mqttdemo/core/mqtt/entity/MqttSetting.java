@@ -21,8 +21,11 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 import com.xuexiang.xpush.mqtt.core.MqttCore;
+import com.xuexiang.xpush.mqtt.core.Subscription;
 
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
+
+import java.util.List;
 
 /**
  * MQTT客户端设置
@@ -64,10 +67,15 @@ public class MqttSetting implements Parcelable {
      * 心跳保持的时间
      */
     private int mKeepAlive;
+    /**
+     * 订阅主题
+     */
+    private List<Subscription> mSubscriptions;
 
     public MqttSetting(String host) {
         mHost = host;
     }
+
 
     protected MqttSetting(Parcel in) {
         mClientId = in.readString();
@@ -77,6 +85,7 @@ public class MqttSetting implements Parcelable {
         mPassword = in.readString();
         mTimeout = in.readInt();
         mKeepAlive = in.readInt();
+        mSubscriptions = in.createTypedArrayList(Subscription.CREATOR);
     }
 
     public static final Creator<MqttSetting> CREATOR = new Creator<MqttSetting>() {
@@ -163,6 +172,27 @@ public class MqttSetting implements Parcelable {
         return this;
     }
 
+    public MqttSetting setSubscriptions(List<Subscription> subscriptions) {
+        mSubscriptions = subscriptions;
+        return this;
+    }
+
+    public List<Subscription> getSubscriptions() {
+        return mSubscriptions;
+    }
+
+    @Override
+    public String toString() {
+        return "MqttSetting{" +
+                "mClientId='" + mClientId + '\'' +
+                ", mHost='" + mHost + '\'' +
+                ", mPort=" + mPort +
+                ", mUserName='" + mUserName + '\'' +
+                ", mPassword='" + mPassword + '\'' +
+                ", mTimeout=" + mTimeout +
+                ", mKeepAlive=" + mKeepAlive +
+                '}';
+    }
 
     @Override
     public int describeContents() {
@@ -178,18 +208,6 @@ public class MqttSetting implements Parcelable {
         dest.writeString(mPassword);
         dest.writeInt(mTimeout);
         dest.writeInt(mKeepAlive);
-    }
-
-    @Override
-    public String toString() {
-        return "MqttSetting{" +
-                "mClientId='" + mClientId + '\'' +
-                ", mHost='" + mHost + '\'' +
-                ", mPort=" + mPort +
-                ", mUserName='" + mUserName + '\'' +
-                ", mPassword='" + mPassword + '\'' +
-                ", mTimeout=" + mTimeout +
-                ", mKeepAlive=" + mKeepAlive +
-                '}';
+        dest.writeTypedList(mSubscriptions);
     }
 }

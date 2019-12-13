@@ -32,6 +32,8 @@ import com.xuexiang.xutil.common.StringUtils;
 
 import butterknife.BindView;
 
+import static android.app.Activity.RESULT_OK;
+
 /**
  * @author xuexiang
  * @since 2019-07-08 00:52
@@ -91,6 +93,8 @@ public class SettingFragment extends BaseFragment {
             setting.setKeepAlive(StringUtils.toInt(metKeepAlive.getEditValue()));
             if (MMKVUtils.put(MqttSetting.KEY, setting)) {
                 XToastUtils.success("保存成功");
+                setFragmentResult(RESULT_OK, null);
+                popToBack();
             }
         }
     }
