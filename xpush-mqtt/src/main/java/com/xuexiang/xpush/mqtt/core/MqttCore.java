@@ -22,6 +22,14 @@ import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
 
+import com.xuexiang.xpush.mqtt.core.callback.OnMqttActionListener;
+import com.xuexiang.xpush.mqtt.core.callback.OnMqttEventListener;
+import com.xuexiang.xpush.mqtt.core.callback.XPushTraceCallback;
+import com.xuexiang.xpush.mqtt.core.entity.ConnectionStatus;
+import com.xuexiang.xpush.mqtt.core.entity.MqttAction;
+import com.xuexiang.xpush.mqtt.core.entity.PublishMessage;
+import com.xuexiang.xpush.mqtt.core.entity.Subscription;
+
 import org.eclipse.paho.android.service.MqttAndroidClient;
 import org.eclipse.paho.client.mqttv3.IMqttActionListener;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
@@ -46,6 +54,7 @@ import java.util.Map;
  */
 public class MqttCore implements IMqttActionListener, MqttCallbackExtended {
 
+    private Context mContext;
     /**
      * 客户端
      */
@@ -85,6 +94,7 @@ public class MqttCore implements IMqttActionListener, MqttCallbackExtended {
      * @param builder
      */
     private MqttCore(Builder builder) {
+        mContext = builder.context;
         String uri;
         if (builder.isUseTls) {
             uri = "ssl://" + builder.host + ":" + builder.port;
@@ -515,6 +525,7 @@ public class MqttCore implements IMqttActionListener, MqttCallbackExtended {
         mOptions = null;
         mConnectionStatus = null;
         mSubscriptions.clear();
+        mContext = null;
     }
 
     //===================================内部动作========================================//
@@ -771,6 +782,10 @@ public class MqttCore implements IMqttActionListener, MqttCallbackExtended {
 
     public boolean isConnected() {
         return mClient != null && mClient.isConnected();
+    }
+
+    public Context getContext() {
+        return mContext;
     }
 
     //===========================构建者================================//

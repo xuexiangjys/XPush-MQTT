@@ -15,33 +15,35 @@
  *
  */
 
-package com.xuexiang.xpush.mqtt.core;
+package com.xuexiang.xpush.mqtt.agent;
 
-import org.eclipse.paho.client.mqttv3.IMqttToken;
+import android.content.Context;
+import android.content.SharedPreferences;
 
 /**
- * MQTT 动作监听
+ * MQTT 参数本地持久化，使用SharedPreferences进行存储
  *
  * @author xuexiang
- * @since 2019-12-13 9:16
+ * @since 2019-12-16 00:18
  */
-public interface OnMqttActionListener {
+public final class MqttPersistence {
+
+    private MqttPersistence() {
+        throw new UnsupportedOperationException("u can't instantiate me...");
+    }
+
+    private static final String MQTT_NAME = "mqtt";
+
+    private static SharedPreferences sSP;
 
     /**
-     * 动作成功
+     * 初始化
      *
-     * @param action      动作类型
-     * @param actionToken
+     * @param context
      */
-    void onActionSuccess(MqttAction action, IMqttToken actionToken);
+    public static void init(Context context) {
+        sSP = context.getSharedPreferences(MQTT_NAME, Context.MODE_PRIVATE);
+    }
 
-    /**
-     * 动作失败
-     *
-     * @param action      动作类型
-     * @param actionToken
-     * @param exception
-     */
-    void onActionFailure(MqttAction action, IMqttToken actionToken, Throwable exception);
 
 }

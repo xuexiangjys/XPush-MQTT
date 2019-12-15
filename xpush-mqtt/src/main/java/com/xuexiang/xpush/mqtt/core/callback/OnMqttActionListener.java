@@ -15,34 +15,35 @@
  *
  */
 
-package com.xuexiang.mqttdemo.core.mqtt;
+package com.xuexiang.xpush.mqtt.core.callback;
 
-import com.xuexiang.mqttdemo.utils.XToastUtils;
 import com.xuexiang.xpush.mqtt.core.entity.MqttAction;
-import com.xuexiang.xpush.mqtt.core.callback.OnMqttActionListener;
 
 import org.eclipse.paho.client.mqttv3.IMqttToken;
 
 /**
- * 简单的MQTT动作监听
+ * MQTT 动作监听
  *
  * @author xuexiang
- * @since 2019-12-13 13:56
+ * @since 2019-12-13 9:16
  */
-public class SimpleMqttActionListener implements OnMqttActionListener {
+public interface OnMqttActionListener {
 
-    @Override
-    public void onActionSuccess(MqttAction action, IMqttToken actionToken) {
-        if (action.getArgs() != null) {
-            XToastUtils.success("[" + action.getArgs() + "]" + action.getName() + "成功");
-        } else {
-            XToastUtils.success(action.getName() + "成功");
-        }
-    }
+    /**
+     * 动作成功
+     *
+     * @param action      动作类型
+     * @param actionToken
+     */
+    void onActionSuccess(MqttAction action, IMqttToken actionToken);
 
-    @Override
-    public void onActionFailure(MqttAction action, IMqttToken actionToken, Throwable exception) {
-        XToastUtils.error(exception);
-    }
+    /**
+     * 动作失败
+     *
+     * @param action      动作类型
+     * @param actionToken
+     * @param exception
+     */
+    void onActionFailure(MqttAction action, IMqttToken actionToken, Throwable exception);
 
 }

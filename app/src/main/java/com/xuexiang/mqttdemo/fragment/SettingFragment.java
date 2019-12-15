@@ -21,11 +21,11 @@ import android.view.View;
 
 import com.xuexiang.mqttdemo.R;
 import com.xuexiang.mqttdemo.core.BaseFragment;
-import com.xuexiang.mqttdemo.core.mqtt.entity.MqttSetting;
 import com.xuexiang.mqttdemo.utils.MMKVUtils;
 import com.xuexiang.mqttdemo.utils.XToastUtils;
 import com.xuexiang.xaop.annotation.SingleClick;
 import com.xuexiang.xpage.annotation.Page;
+import com.xuexiang.xpush.mqtt.agent.entity.MqttOption;
 import com.xuexiang.xui.widget.actionbar.TitleBar;
 import com.xuexiang.xui.widget.edittext.materialedittext.MaterialEditText;
 import com.xuexiang.xutil.common.StringUtils;
@@ -38,7 +38,7 @@ import static android.app.Activity.RESULT_OK;
  * @author xuexiang
  * @since 2019-07-08 00:52
  */
-@Page(name = "MQTT连接设置")
+@Page(name = "MQTT连接设置\n设置服务器地址、端口号、超时时间等")
 public class SettingFragment extends BaseFragment {
 
     @BindView(R.id.met_client_id)
@@ -84,14 +84,14 @@ public class SettingFragment extends BaseFragment {
      */
     private void doSaveSetting() {
         if (metHost.validate()) {
-            MqttSetting setting = new MqttSetting(metHost.getEditValue());
-            setting.setClientId(metClientId.getEditValue());
-            setting.setPort(StringUtils.toInt(metPort.getEditValue()));
-            setting.setUserName(metUsername.getEditValue());
-            setting.setPassword(metPassword.getEditValue());
-            setting.setTimeout(StringUtils.toInt(metTimeout.getEditValue()));
-            setting.setKeepAlive(StringUtils.toInt(metKeepAlive.getEditValue()));
-            if (MMKVUtils.put(MqttSetting.KEY, setting)) {
+            MqttOption option = new MqttOption(metHost.getEditValue());
+            option.setClientId(metClientId.getEditValue());
+            option.setPort(StringUtils.toInt(metPort.getEditValue()));
+            option.setUserName(metUsername.getEditValue());
+            option.setPassword(metPassword.getEditValue());
+            option.setTimeout(StringUtils.toInt(metTimeout.getEditValue()));
+            option.setKeepAlive(StringUtils.toInt(metKeepAlive.getEditValue()));
+            if (MMKVUtils.put(MqttOption.KEY, option)) {
                 XToastUtils.success("保存成功");
                 setFragmentResult(RESULT_OK, null);
                 popToBack();
@@ -104,9 +104,9 @@ public class SettingFragment extends BaseFragment {
      */
     @Override
     protected void initViews() {
-        MqttSetting setting = MMKVUtils.getObject(MqttSetting.KEY, MqttSetting.class);
+        MqttOption setting = MMKVUtils.getObject(MqttOption.KEY, MqttOption.class);
         if (setting == null) {
-            setting = new MqttSetting("");
+            setting = new MqttOption("");
         }
 
         metClientId.setText(StringUtils.getString(setting.getClientId()));

@@ -15,7 +15,9 @@
  *
  */
 
-package com.xuexiang.xpush.mqtt.core;
+package com.xuexiang.xpush.mqtt.core.callback;
+
+import com.xuexiang.xpush.mqtt.core.entity.ConnectionStatus;
 
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 

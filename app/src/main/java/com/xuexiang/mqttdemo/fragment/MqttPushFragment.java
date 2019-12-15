@@ -15,33 +15,29 @@
  *
  */
 
-package com.xuexiang.xpush.mqtt.core;
+package com.xuexiang.mqttdemo.fragment;
 
-import com.xuexiang.xpush.logs.PushLog;
-
-import org.eclipse.paho.android.service.MqttTraceHandler;
+import com.xuexiang.mqttdemo.R;
+import com.xuexiang.mqttdemo.core.BaseFragment;
+import com.xuexiang.xpage.annotation.Page;
 
 /**
  * @author xuexiang
- * @since 2019-12-12 9:32
+ * @since 2019-12-15 23:18
  */
-public class XPushTraceCallback implements MqttTraceHandler {
-
-    private static final String TAG = "MQTT-";
+@Page(name = "MqttPush\n结合XPush进行消息的统一管理")
+public class MqttPushFragment extends BaseFragment {
 
     @Override
-    public void traceDebug(String tag, String message) {
-        PushLog.d(TAG + tag + ": " + message);
+    protected int getLayoutId() {
+        return R.layout.fragment_mqtt_push;
     }
 
     @Override
-    public void traceError(String tag, String message) {
-        PushLog.e(TAG + tag + ": " + message);
+    protected void initViews() {
+
+
     }
 
-    @Override
-    public void traceException(String tag, String message, Exception e) {
-        PushLog.e(TAG + tag + ": " + message, e);
-    }
 
 }

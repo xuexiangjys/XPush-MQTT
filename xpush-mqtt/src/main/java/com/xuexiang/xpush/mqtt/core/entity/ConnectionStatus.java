@@ -15,7 +15,7 @@
  *
  */
 
-package com.xuexiang.xpush.mqtt.core;
+package com.xuexiang.xpush.mqtt.core.entity;
 
 /**
  * 连接状态

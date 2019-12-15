@@ -15,7 +15,7 @@
  *
  */
 
-package com.xuexiang.xpush.mqtt.core;
+package com.xuexiang.xpush.mqtt.core.entity;
 
 import android.os.Parcel;
 import android.os.Parcelable;

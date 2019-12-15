@@ -15,26 +15,27 @@
  *
  */
 
-package com.xuexiang.mqttdemo.core.mqtt.entity;
+package com.xuexiang.xpush.mqtt.agent.entity;
 
 import android.os.Parcel;
 import android.os.Parcelable;
 
 import com.xuexiang.xpush.mqtt.core.MqttCore;
-import com.xuexiang.xpush.mqtt.core.Subscription;
+import com.xuexiang.xpush.mqtt.core.entity.Subscription;
 
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 
 import java.util.List;
 
 /**
- * MQTT客户端设置
+ * MQTT客户端设置选项
  *
  * @author xuexiang
  * @since 2019-12-12 22:26
  */
-public class MqttSetting implements Parcelable {
-    public static final String KEY = "key_mqtt_setting";
+public class MqttOption implements Parcelable {
+
+    public static final String KEY = "key_mqtt_option";
 
     //======基础设置====//
     /**
@@ -72,12 +73,12 @@ public class MqttSetting implements Parcelable {
      */
     private List<Subscription> mSubscriptions;
 
-    public MqttSetting(String host) {
+    public MqttOption(String host) {
         mHost = host;
     }
 
 
-    protected MqttSetting(Parcel in) {
+    protected MqttOption(Parcel in) {
         mClientId = in.readString();
         mHost = in.readString();
         mPort = in.readInt();
@@ -88,15 +89,15 @@ public class MqttSetting implements Parcelable {
         mSubscriptions = in.createTypedArrayList(Subscription.CREATOR);
     }
 
-    public static final Creator<MqttSetting> CREATOR = new Creator<MqttSetting>() {
+    public static final Creator<MqttOption> CREATOR = new Creator<MqttOption>() {
         @Override
-        public MqttSetting createFromParcel(Parcel in) {
-            return new MqttSetting(in);
+        public MqttOption createFromParcel(Parcel in) {
+            return new MqttOption(in);
         }
 
         @Override
-        public MqttSetting[] newArray(int size) {
-            return new MqttSetting[size];
+        public MqttOption[] newArray(int size) {
+            return new MqttOption[size];
         }
     };
 
@@ -104,7 +105,7 @@ public class MqttSetting implements Parcelable {
         return mClientId;
     }
 
-    public MqttSetting setClientId(String clientId) {
+    public MqttOption setClientId(String clientId) {
         mClientId = clientId;
         return this;
     }
@@ -113,7 +114,7 @@ public class MqttSetting implements Parcelable {
         return mHost;
     }
 
-    public MqttSetting setHost(String host) {
+    public MqttOption setHost(String host) {
         mHost = host;
         return this;
     }
@@ -125,7 +126,7 @@ public class MqttSetting implements Parcelable {
         return mPort;
     }
 
-    public MqttSetting setPort(int port) {
+    public MqttOption setPort(int port) {
         mPort = port;
         return this;
     }
@@ -134,7 +135,7 @@ public class MqttSetting implements Parcelable {
         return mUserName;
     }
 
-    public MqttSetting setUserName(String userName) {
+    public MqttOption setUserName(String userName) {
         mUserName = userName;
         return this;
     }
@@ -143,7 +144,7 @@ public class MqttSetting implements Parcelable {
         return mPassword;
     }
 
-    public MqttSetting setPassword(String password) {
+    public MqttOption setPassword(String password) {
         mPassword = password;
         return this;
     }
@@ -155,7 +156,7 @@ public class MqttSetting implements Parcelable {
         return mTimeout;
     }
 
-    public MqttSetting setTimeout(int timeout) {
+    public MqttOption setTimeout(int timeout) {
         mTimeout = timeout;
         return this;
     }
@@ -167,12 +168,12 @@ public class MqttSetting implements Parcelable {
         return mKeepAlive;
     }
 
-    public MqttSetting setKeepAlive(int keepAlive) {
+    public MqttOption setKeepAlive(int keepAlive) {
         mKeepAlive = keepAlive;
         return this;
     }
 
-    public MqttSetting setSubscriptions(List<Subscription> subscriptions) {
+    public MqttOption setSubscriptions(List<Subscription> subscriptions) {
         mSubscriptions = subscriptions;
         return this;
     }
@@ -183,7 +184,7 @@ public class MqttSetting implements Parcelable {
 
     @Override
     public String toString() {
-        return "MqttSetting{" +
+        return "MqttOption{" +
                 "mClientId='" + mClientId + '\'' +
                 ", mHost='" + mHost + '\'' +
                 ", mPort=" + mPort +

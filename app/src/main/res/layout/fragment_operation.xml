@@ -46,12 +46,27 @@
                 android:layout_weight="1"
                 android:text="断开" />
 
+        </LinearLayout>
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="?attr/xui_config_content_spacing_horizontal"
+            android:orientation="horizontal">
+
             <Button
                 android:id="@+id/btn_subscribe"
                 style="@style/Button.Blue"
-                android:layout_marginStart="?attr/xui_config_content_spacing_horizontal"
                 android:layout_weight="1"
                 android:text="订阅" />
+
+            <Button
+                android:id="@+id/btn_publish"
+                style="@style/Button.Blue"
+                android:layout_marginStart="?attr/xui_config_content_spacing_horizontal"
+                android:layout_weight="1"
+                android:text="发布" />
 
         </LinearLayout>
 
