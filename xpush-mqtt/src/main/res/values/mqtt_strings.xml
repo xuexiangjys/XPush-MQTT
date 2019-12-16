@@ -17,4 +17,6 @@
 
 <resources>
 
+    <string name="xpush_mqttpush_client_name">com.xuexiang.xpush.mqtt.MqttPushClient</string>
+
 </resources>

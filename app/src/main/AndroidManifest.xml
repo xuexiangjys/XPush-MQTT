@@ -32,6 +32,22 @@
             android:screenOrientation="portrait"
             android:windowSoftInputMode="adjustPan|stateHidden" />
 
+        <activity android:name=".activity.TestActivity" />
+
+        <!--********************************XPush消息推送接收器************************************-->
+        <!--自定义消息推送接收器-->
+        <receiver android:name=".core.push.CustomPushReceiver">
+            <intent-filter>
+                <action android:name="com.xuexiang.xpush.core.action.RECEIVE_CONNECT_STATUS_CHANGED" />
+                <action android:name="com.xuexiang.xpush.core.action.RECEIVE_NOTIFICATION" />
+                <action android:name="com.xuexiang.xpush.core.action.RECEIVE_NOTIFICATION_CLICK" />
+                <action android:name="com.xuexiang.xpush.core.action.RECEIVE_MESSAGE" />
+                <action android:name="com.xuexiang.xpush.core.action.RECEIVE_COMMAND_RESULT" />
+
+                <category android:name="${applicationId}" />
+            </intent-filter>
+        </receiver>
+
 
         <!--屏幕自适应设计图-->
         <meta-data
@@ -40,6 +56,24 @@
         <meta-data
             android:name="design_height_in_dp"
             android:value="640" />
+
+        <!--********************************XPush各家推送的AppId注册地方************************************-->
+        <!--极光推送静态注册-->
+        <meta-data
+            android:name="MQTT_HOST"
+            android:value="192.168.0.108" />
+        <meta-data
+            android:name="MQTT_PORT"
+            android:value="1883" />
+
+        <!--********************************XPush各家推送的SDK注册地方**************************************-->
+        <!--name格式：XPush_[PlatformName]_[PlatformCode]-->
+        <!--value格式：对应客户端实体类的全类名路径-->
+
+        <!--如果引入了xpush-jpush库-->
+        <meta-data
+            android:name="XPush_MqttPush_1010"
+            android:value="@string/xpush_mqttpush_client_name" />
 
     </application>
 

@@ -31,7 +31,7 @@ import com.xuexiang.mqttdemo.utils.MMKVUtils;
 import com.xuexiang.mqttdemo.utils.XToastUtils;
 import com.xuexiang.mqttdemo.widget.PublishDialog;
 import com.xuexiang.xpage.annotation.Page;
-import com.xuexiang.xpush.mqtt.agent.entity.MqttOption;
+import com.xuexiang.xpush.mqtt.agent.entity.MqttOptions;
 import com.xuexiang.xpush.mqtt.core.entity.ConnectionStatus;
 import com.xuexiang.xpush.mqtt.core.entity.MqttAction;
 import com.xuexiang.xpush.mqtt.core.MqttCore;
@@ -59,7 +59,7 @@ import static android.app.Activity.RESULT_OK;
  * @author xuexiang
  * @since 2019-12-12 23:53
  */
-@Page(name = "MQTT详细操作\n连接、断开、订阅、发布等操作")
+@Page(name = "Mqtt详细操作\n连接、断开、订阅、发布等操作")
 public class OperationFragment extends BaseFragment implements RecyclerViewHolder.OnItemClickListener<Subscription>, PublishDialog.OnPublishListener {
     private static final int REQUEST_CODE_SETTING = 1000;
 
@@ -75,7 +75,7 @@ public class OperationFragment extends BaseFragment implements RecyclerViewHolde
     RecyclerView recyclerView;
 
     private MqttCore mMqttCore;
-    private MqttOption mMqttOption;
+    private MqttOptions mMqttOptions;
 
     private BaseRecyclerAdapter<Subscription> mAdapter;
 
@@ -86,7 +86,7 @@ public class OperationFragment extends BaseFragment implements RecyclerViewHolde
 
     @Override
     protected void initArgs() {
-        mMqttOption = MMKVUtils.getObject(MqttOption.KEY, MqttOption.class);
+        mMqttOptions = MMKVUtils.getObject(MqttOptions.KEY, MqttOptions.class);
     }
 
     @Override
@@ -159,16 +159,16 @@ public class OperationFragment extends BaseFragment implements RecyclerViewHolde
     }
 
     private void doConnect() {
-        if (mMqttOption == null) {
+        if (mMqttOptions == null) {
             XToastUtils.error("请先配置MQTT连接设置");
             openPageForResult(SettingFragment.class, REQUEST_CODE_SETTING);
             return;
         }
 
         if (mMqttCore == null) {
-            mMqttCore = buildMqttCore(mMqttOption);
+            mMqttCore = buildMqttCore(mMqttOptions);
             //订阅信息
-            mMqttCore.setSubscriptions(mMqttOption.getSubscriptions());
+            mMqttCore.setSubscriptions(mMqttOptions.getSubscriptions());
             //动作回调
             mMqttCore.setOnMqttActionListener(mOnMqttActionListener);
             //事件回调
@@ -190,7 +190,7 @@ public class OperationFragment extends BaseFragment implements RecyclerViewHolde
         }
     }
 
-    public MqttCore buildMqttCore(MqttOption option) {
+    public MqttCore buildMqttCore(MqttOptions option) {
         return MqttCore.Builder(getContext(), option.getHost())
                 .setClientId(option.getClientId())
                 .setPort(option.getPort())
@@ -205,7 +205,7 @@ public class OperationFragment extends BaseFragment implements RecyclerViewHolde
     public void onFragmentResult(int requestCode, int resultCode, Intent data) {
         super.onFragmentResult(requestCode, resultCode, data);
         if (resultCode == RESULT_OK && requestCode == REQUEST_CODE_SETTING) {
-            mMqttOption = MMKVUtils.getObject(MqttOption.KEY, MqttOption.class);
+            mMqttOptions = MMKVUtils.getObject(MqttOptions.KEY, MqttOptions.class);
         }
     }
 
@@ -271,9 +271,9 @@ public class OperationFragment extends BaseFragment implements RecyclerViewHolde
                 switch (action) {
                     case SUBSCRIBE:
                     case UNSUBSCRIBE:
-                        mMqttOption.setSubscriptions(mMqttCore.getSubscriptionList());
+                        mMqttOptions.setSubscriptions(mMqttCore.getSubscriptionList());
                         //更新订阅信息
-                        MMKVUtils.put(MqttOption.KEY, mMqttOption);
+                        MMKVUtils.put(MqttOptions.KEY, mMqttOptions);
                         mAdapter.refresh(mMqttCore.getSubscriptionList());
                         break;
                     default:

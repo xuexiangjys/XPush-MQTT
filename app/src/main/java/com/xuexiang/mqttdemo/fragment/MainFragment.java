@@ -31,7 +31,7 @@ import com.xuexiang.xutil.common.ClickUtils;
  * @author xuexiang
  * @since 2018/11/7 下午1:16
  */
-@Page(name = "MQTT使用演示", anim = CoreAnim.none)
+@Page(name = "Mqtt使用演示", anim = CoreAnim.none)
 public class MainFragment extends BaseContainerFragment implements ClickUtils.OnClick2ExitListener {
 
     @Override

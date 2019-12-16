@@ -33,7 +33,7 @@ import java.util.List;
  * @author xuexiang
  * @since 2019-12-12 22:26
  */
-public class MqttOption implements Parcelable {
+public class MqttOptions implements Parcelable {
 
     public static final String KEY = "key_mqtt_option";
 
@@ -73,12 +73,16 @@ public class MqttOption implements Parcelable {
      */
     private List<Subscription> mSubscriptions;
 
-    public MqttOption(String host) {
+    public static MqttOptions create(String host) {
+        return new MqttOptions(host);
+    }
+
+    public MqttOptions(String host) {
         mHost = host;
     }
 
 
-    protected MqttOption(Parcel in) {
+    protected MqttOptions(Parcel in) {
         mClientId = in.readString();
         mHost = in.readString();
         mPort = in.readInt();
@@ -89,15 +93,15 @@ public class MqttOption implements Parcelable {
         mSubscriptions = in.createTypedArrayList(Subscription.CREATOR);
     }
 
-    public static final Creator<MqttOption> CREATOR = new Creator<MqttOption>() {
+    public static final Creator<MqttOptions> CREATOR = new Creator<MqttOptions>() {
         @Override
-        public MqttOption createFromParcel(Parcel in) {
-            return new MqttOption(in);
+        public MqttOptions createFromParcel(Parcel in) {
+            return new MqttOptions(in);
         }
 
         @Override
-        public MqttOption[] newArray(int size) {
-            return new MqttOption[size];
+        public MqttOptions[] newArray(int size) {
+            return new MqttOptions[size];
         }
     };
 
@@ -105,7 +109,7 @@ public class MqttOption implements Parcelable {
         return mClientId;
     }
 
-    public MqttOption setClientId(String clientId) {
+    public MqttOptions setClientId(String clientId) {
         mClientId = clientId;
         return this;
     }
@@ -114,7 +118,7 @@ public class MqttOption implements Parcelable {
         return mHost;
     }
 
-    public MqttOption setHost(String host) {
+    public MqttOptions setHost(String host) {
         mHost = host;
         return this;
     }
@@ -126,7 +130,7 @@ public class MqttOption implements Parcelable {
         return mPort;
     }
 
-    public MqttOption setPort(int port) {
+    public MqttOptions setPort(int port) {
         mPort = port;
         return this;
     }
@@ -135,7 +139,7 @@ public class MqttOption implements Parcelable {
         return mUserName;
     }
 
-    public MqttOption setUserName(String userName) {
+    public MqttOptions setUserName(String userName) {
         mUserName = userName;
         return this;
     }
@@ -144,7 +148,7 @@ public class MqttOption implements Parcelable {
         return mPassword;
     }
 
-    public MqttOption setPassword(String password) {
+    public MqttOptions setPassword(String password) {
         mPassword = password;
         return this;
     }
@@ -156,7 +160,7 @@ public class MqttOption implements Parcelable {
         return mTimeout;
     }
 
-    public MqttOption setTimeout(int timeout) {
+    public MqttOptions setTimeout(int timeout) {
         mTimeout = timeout;
         return this;
     }
@@ -168,12 +172,12 @@ public class MqttOption implements Parcelable {
         return mKeepAlive;
     }
 
-    public MqttOption setKeepAlive(int keepAlive) {
+    public MqttOptions setKeepAlive(int keepAlive) {
         mKeepAlive = keepAlive;
         return this;
     }
 
-    public MqttOption setSubscriptions(List<Subscription> subscriptions) {
+    public MqttOptions setSubscriptions(List<Subscription> subscriptions) {
         mSubscriptions = subscriptions;
         return this;
     }

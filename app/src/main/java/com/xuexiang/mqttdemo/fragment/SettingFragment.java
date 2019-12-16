@@ -25,7 +25,7 @@ import com.xuexiang.mqttdemo.utils.MMKVUtils;
 import com.xuexiang.mqttdemo.utils.XToastUtils;
 import com.xuexiang.xaop.annotation.SingleClick;
 import com.xuexiang.xpage.annotation.Page;
-import com.xuexiang.xpush.mqtt.agent.entity.MqttOption;
+import com.xuexiang.xpush.mqtt.agent.entity.MqttOptions;
 import com.xuexiang.xui.widget.actionbar.TitleBar;
 import com.xuexiang.xui.widget.edittext.materialedittext.MaterialEditText;
 import com.xuexiang.xutil.common.StringUtils;
@@ -38,7 +38,7 @@ import static android.app.Activity.RESULT_OK;
  * @author xuexiang
  * @since 2019-07-08 00:52
  */
-@Page(name = "MQTT连接设置\n设置服务器地址、端口号、超时时间等")
+@Page(name = "Mqtt连接设置\n设置服务器地址、端口号、超时时间等")
 public class SettingFragment extends BaseFragment {
 
     @BindView(R.id.met_client_id)
@@ -84,14 +84,14 @@ public class SettingFragment extends BaseFragment {
      */
     private void doSaveSetting() {
         if (metHost.validate()) {
-            MqttOption option = new MqttOption(metHost.getEditValue());
+            MqttOptions option = new MqttOptions(metHost.getEditValue());
             option.setClientId(metClientId.getEditValue());
             option.setPort(StringUtils.toInt(metPort.getEditValue()));
             option.setUserName(metUsername.getEditValue());
             option.setPassword(metPassword.getEditValue());
             option.setTimeout(StringUtils.toInt(metTimeout.getEditValue()));
             option.setKeepAlive(StringUtils.toInt(metKeepAlive.getEditValue()));
-            if (MMKVUtils.put(MqttOption.KEY, option)) {
+            if (MMKVUtils.put(MqttOptions.KEY, option)) {
                 XToastUtils.success("保存成功");
                 setFragmentResult(RESULT_OK, null);
                 popToBack();
@@ -104,9 +104,9 @@ public class SettingFragment extends BaseFragment {
      */
     @Override
     protected void initViews() {
-        MqttOption setting = MMKVUtils.getObject(MqttOption.KEY, MqttOption.class);
+        MqttOptions setting = MMKVUtils.getObject(MqttOptions.KEY, MqttOptions.class);
         if (setting == null) {
-            setting = new MqttOption("");
+            setting = new MqttOptions("");
         }
 
         metClientId.setText(StringUtils.getString(setting.getClientId()));

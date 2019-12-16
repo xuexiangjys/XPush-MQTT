@@ -19,12 +19,17 @@ package com.xuexiang.mqttdemo;
 
 import android.app.Application;
 import android.content.Context;
+import android.os.Build;
 
 import androidx.multidex.MultiDex;
 
+import com.xuexiang.mqttdemo.core.push.CustomPushReceiver;
 import com.xuexiang.mqttdemo.utils.sdkinit.UMengInit;
 import com.xuexiang.mqttdemo.utils.sdkinit.XBasicLibInit;
 import com.xuexiang.xpush.XPush;
+import com.xuexiang.xpush.core.IPushInitCallback;
+import com.xuexiang.xpush.core.dispatcher.impl.Android26PushDispatcherImpl;
+import com.xuexiang.xpush.mqtt.MqttPushClient;
 
 /**
  * @author xuexiang
@@ -69,7 +74,19 @@ public class MyApp extends Application {
 
 
     public void initXPush() {
-        XPush.init(this);
         XPush.debug(MyApp.isDebug());
+        XPush.init(this, new IPushInitCallback() {
+            @Override
+            public boolean onInitPush(int platformCode, String platformName) {
+                return platformCode == MqttPushClient.MQTT_PUSH_PLATFORM_CODE && MqttPushClient.MQTT_PUSH_PLATFORM_NAME.equals(platformName);
+            }
+        });
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            //Android8.0静态广播注册失败解决方案二：修改发射器
+            XPush.setIPushDispatcher(new Android26PushDispatcherImpl(CustomPushReceiver.class));
+        }
+
+        XPush.register();
     }
 }

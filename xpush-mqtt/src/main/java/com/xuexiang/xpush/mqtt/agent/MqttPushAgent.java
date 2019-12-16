@@ -20,8 +20,16 @@ package com.xuexiang.xpush.mqtt.agent;
 import android.content.Context;
 import android.text.TextUtils;
 
+import com.xuexiang.xpush.mqtt.agent.entity.MqttOptions;
 import com.xuexiang.xpush.mqtt.core.MqttCore;
+import com.xuexiang.xpush.mqtt.core.callback.OnMqttActionListener;
 import com.xuexiang.xpush.mqtt.core.callback.OnMqttEventListener;
+import com.xuexiang.xpush.mqtt.core.entity.MqttAction;
+
+import org.eclipse.paho.client.mqttv3.IMqttActionListener;
+import org.eclipse.paho.client.mqttv3.IMqttToken;
+
+import java.util.Set;
 
 /**
  * MQTT 推送代理
@@ -39,15 +47,6 @@ public final class MqttPushAgent {
     private MqttCore mMqttCore;
 
     private Context mContext;
-
-    /**
-     * 服务器地址
-     */
-    private String mHost;
-    /**
-     * 端口号
-     */
-    private int mPort;
 
     private MqttPushAgent() {
 
@@ -101,9 +100,9 @@ public final class MqttPushAgent {
      */
     public void init(Context context, String host, int port) {
         mContext = context.getApplicationContext();
-        mHost = host;
-        mPort = port;
         MqttPersistence.init(mContext);
+        MqttPersistence.saveServerHost(host);
+        MqttPersistence.saveServerPort(port);
     }
 
     /**
@@ -115,22 +114,123 @@ public final class MqttPushAgent {
 
     /**
      * 注册
+     *
+     * @param onMqttActionListener 动作监听器
      */
-    public void register() {
+    public void register(OnMqttActionListener onMqttActionListener) {
         if (mMqttCore == null) {
-            if (TextUtils.isEmpty(mHost)) {
+            if (TextUtils.isEmpty(MqttPersistence.getServerHost())) {
                 throw new IllegalArgumentException("Mqtt push host is not init," +
                         "please call MqttPushAgent.getInstance().init to set host.");
             }
-            mMqttCore = MqttCore.Builder(mContext, mHost)
-                    .setPort(mPort)
-                    .build();
+            MqttOptions options = MqttPersistence.getMqttOptions();
+            mMqttCore = buildMqttCoreByOption(options);
+            //订阅信息
+            mMqttCore.setSubscriptions(options.getSubscriptions());
         }
+
+        mMqttCore.setOnMqttActionListener(onMqttActionListener);
 
         if (!mMqttCore.isConnected()) {
             mMqttCore.connect();
         }
     }
+
+    /**
+     * 构建MqttCore
+     *
+     * @param option
+     * @return
+     */
+    private MqttCore buildMqttCoreByOption(MqttOptions option) {
+        return MqttCore.Builder(getContext(), option.getHost())
+                .setClientId(option.getClientId())
+                .setPort(option.getPort())
+                .setUserName(option.getUserName())
+                .setPassWord(option.getPassword())
+                .setTimeout(option.getTimeout())
+                .setKeepAlive(option.getKeepAlive())
+                .setAutomaticReconnect(true)
+                .build();
+    }
+
+    /**
+     * 注销
+     */
+    public void unRegister() {
+        if (mMqttCore != null) {
+            if (mMqttCore.isConnected()) {
+                mMqttCore.disconnect(new IMqttActionListener() {
+                    @Override
+                    public void onSuccess(IMqttToken asyncActionToken) {
+                        mMqttCore.onActionSuccess(MqttAction.DISCONNECT, asyncActionToken);
+                        mMqttCore.setOnMqttActionListener(null);
+                    }
+
+                    @Override
+                    public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
+                        mMqttCore.onActionFailure(MqttAction.DISCONNECT, asyncActionToken, exception);
+                        mMqttCore.setOnMqttActionListener(null);
+                    }
+                });
+            }
+        }
+    }
+
+
+    /**
+     * 增加标签
+     *
+     * @param tags
+     */
+    public void addTags(String... tags) {
+        if (mMqttCore != null) {
+            if (tags == null || tags.length == 0) {
+                return;
+            }
+            for (String tag : tags) {
+                mMqttCore.registerSubscription(tag);
+            }
+        }
+    }
+
+
+    /**
+     * 删除标签
+     *
+     * @param tags
+     */
+    public void deleteTags(String... tags) {
+        if (mMqttCore != null) {
+            if (tags == null || tags.length == 0) {
+                return;
+            }
+            for (String tag : tags) {
+                mMqttCore.unregisterSubscription(tag);
+            }
+        }
+    }
+
+    /**
+     * 更新标签信息
+     */
+    public void updateTags() {
+        if (mMqttCore != null) {
+            MqttPersistence.saveSubscriptions(mMqttCore.getSubscriptionList());
+        }
+    }
+
+    /**
+     * @return 标签信息
+     */
+    public Set<String> getTags() {
+        if (mMqttCore != null) {
+            return MqttPersistence.getSubscriptionSet(mMqttCore.getSubscriptionList());
+        } else {
+            return MqttPersistence.getSubscriptionSet();
+        }
+    }
+
 
     /**
      * 设置MQTT事件监听器
@@ -146,10 +246,18 @@ public final class MqttPushAgent {
     }
 
 
-    public void unRegister() {
-
+    /**
+     * 设置MQTT动作监听器
+     *
+     * @param onMqttActionListener
+     * @return
+     */
+    public MqttPushAgent setOnMqttActionListener(OnMqttActionListener onMqttActionListener) {
+        if (mMqttCore != null) {
+            mMqttCore.setOnMqttActionListener(onMqttActionListener);
+        }
+        return this;
     }
-
 
     public static Context getContext() {
         return getInstance().mContext;
@@ -158,4 +266,22 @@ public final class MqttPushAgent {
     public MqttCore getMqttCore() {
         return mMqttCore;
     }
+
+    /**
+     * 更新Token信息
+     */
+    public void updateToken() {
+        if (mMqttCore != null) {
+            MqttPersistence.saveClientId(mMqttCore.getClientId());
+        }
+    }
+
+    public static void savePushToken(String token) {
+        MqttPersistence.saveClientId(token);
+    }
+
+    public static String getPushToken() {
+        return MqttPersistence.getClientId();
+    }
+
 }

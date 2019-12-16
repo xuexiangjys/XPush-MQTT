@@ -40,6 +40,7 @@ import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -642,9 +643,7 @@ public class MqttCore implements IMqttActionListener, MqttCallbackExtended {
     @Override
     public void onSuccess(IMqttToken asyncActionToken) {
         MqttAction action = (MqttAction) asyncActionToken.getUserContext();
-        if (mOnMqttActionListener != null) {
-            mOnMqttActionListener.onActionSuccess(action, asyncActionToken);
-        }
+        onActionSuccess(action, asyncActionToken);
 
         switch (action) {
             case CONNECT:
@@ -666,9 +665,7 @@ public class MqttCore implements IMqttActionListener, MqttCallbackExtended {
     @Override
     public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
         MqttAction action = (MqttAction) asyncActionToken.getUserContext();
-        if (mOnMqttActionListener != null) {
-            mOnMqttActionListener.onActionFailure(action, asyncActionToken, exception);
-        }
+        onActionFailure(action, asyncActionToken, exception);
 
         switch (action) {
             case CONNECT:
@@ -682,6 +679,30 @@ public class MqttCore implements IMqttActionListener, MqttCallbackExtended {
                 break;
             default:
                 break;
+        }
+    }
+
+    /**
+     * 动作成功
+     *
+     * @param action
+     * @param asyncActionToken
+     */
+    public void onActionSuccess(MqttAction action, IMqttToken asyncActionToken) {
+        if (mOnMqttActionListener != null) {
+            mOnMqttActionListener.onActionSuccess(action, asyncActionToken);
+        }
+    }
+
+    /**
+     * 动作失败
+     *
+     * @param action
+     * @param asyncActionToken
+     */
+    public void onActionFailure(MqttAction action, IMqttToken asyncActionToken, Throwable exception) {
+        if (mOnMqttActionListener != null) {
+            mOnMqttActionListener.onActionFailure(action, asyncActionToken, exception);
         }
     }
 
@@ -772,6 +793,22 @@ public class MqttCore implements IMqttActionListener, MqttCallbackExtended {
         return mClient != null ? mClient.getClientId() : "";
     }
 
+    public String getClientHandle() {
+        if (mClient != null) {
+            try {
+                Class<?> ownerClass = mClient.getClass();
+                Field field = ownerClass.getDeclaredField("clientHandle");
+                field.setAccessible(true);
+                return (String) field.get(mClient);
+            } catch (NoSuchFieldException e) {
+                e.printStackTrace();
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            }
+        }
+        return "";
+    }
+
     public Map<String, Subscription> getSubscriptions() {
         return mSubscriptions;
     }
@@ -801,6 +838,9 @@ public class MqttCore implements IMqttActionListener, MqttCallbackExtended {
         return new Builder(context).setHost(host);
     }
 
+    /**
+     * 默认mqtt监听端口
+     */
     public static final int DEFAULT_MQTT_PORT = 1883;
 
     public static class Builder {
@@ -889,6 +929,11 @@ public class MqttCore implements IMqttActionListener, MqttCallbackExtended {
 
         public Builder setKeepAlive(int keepAlive) {
             this.keepAlive = keepAlive;
+            return this;
+        }
+
+        public Builder setAutomaticReconnect(boolean automaticReconnect) {
+            this.automaticReconnect = automaticReconnect;
             return this;
         }
 
