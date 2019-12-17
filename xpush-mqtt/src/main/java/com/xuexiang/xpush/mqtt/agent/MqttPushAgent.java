@@ -101,8 +101,8 @@ public final class MqttPushAgent {
     public void init(Context context, String host, int port) {
         mContext = context.getApplicationContext();
         MqttPersistence.init(mContext);
-        MqttPersistence.saveServerHost(host);
-        MqttPersistence.saveServerPort(port);
+        MqttPersistence.setServerHost(host);
+        MqttPersistence.setServerPort(port);
     }
 
     /**
@@ -117,7 +117,7 @@ public final class MqttPushAgent {
      *
      * @param onMqttActionListener 动作监听器
      */
-    public void register(OnMqttActionListener onMqttActionListener) {
+    public boolean register(OnMqttActionListener onMqttActionListener) {
         if (mMqttCore == null) {
             if (TextUtils.isEmpty(MqttPersistence.getServerHost())) {
                 throw new IllegalArgumentException("Mqtt push host is not init," +
@@ -131,9 +131,7 @@ public final class MqttPushAgent {
 
         mMqttCore.setOnMqttActionListener(onMqttActionListener);
 
-        if (!mMqttCore.isConnected()) {
-            mMqttCore.connect();
-        }
+        return mMqttCore.connect();
     }
 
     /**
@@ -157,7 +155,7 @@ public final class MqttPushAgent {
     /**
      * 注销
      */
-    public void unRegister() {
+    public boolean unRegister() {
         if (mMqttCore != null) {
             if (mMqttCore.isConnected()) {
                 mMqttCore.disconnect(new IMqttActionListener() {
@@ -173,8 +171,10 @@ public final class MqttPushAgent {
                         mMqttCore.setOnMqttActionListener(null);
                     }
                 });
+                return true;
             }
         }
+        return false;
     }
 
 
@@ -183,32 +183,39 @@ public final class MqttPushAgent {
      *
      * @param tags
      */
-    public void addTags(String... tags) {
-        if (mMqttCore != null) {
+    public boolean addTags(String... tags) {
+        if (isMqttReady()) {
             if (tags == null || tags.length == 0) {
-                return;
+                return false;
             }
             for (String tag : tags) {
                 mMqttCore.registerSubscription(tag);
             }
+            return true;
         }
+        return false;
     }
 
+    public boolean isMqttReady() {
+        return mMqttCore != null && mMqttCore.isConnected();
+    }
 
     /**
      * 删除标签
      *
      * @param tags
      */
-    public void deleteTags(String... tags) {
-        if (mMqttCore != null) {
+    public boolean deleteTags(String... tags) {
+        if (isMqttReady()) {
             if (tags == null || tags.length == 0) {
-                return;
+                return false;
             }
             for (String tag : tags) {
                 mMqttCore.unregisterSubscription(tag);
             }
+            return true;
         }
+        return false;
     }
 
     /**
@@ -216,7 +223,7 @@ public final class MqttPushAgent {
      */
     public void updateTags() {
         if (mMqttCore != null) {
-            MqttPersistence.saveSubscriptions(mMqttCore.getSubscriptionList());
+            MqttPersistence.setSubscriptions(mMqttCore.getSubscriptionList());
         }
     }
 
@@ -272,12 +279,12 @@ public final class MqttPushAgent {
      */
     public void updateToken() {
         if (mMqttCore != null) {
-            MqttPersistence.saveClientId(mMqttCore.getClientId());
+            MqttPersistence.setClientId(mMqttCore.getClientId());
         }
     }
 
     public static void savePushToken(String token) {
-        MqttPersistence.saveClientId(token);
+        MqttPersistence.setClientId(token);
     }
 
     public static String getPushToken() {

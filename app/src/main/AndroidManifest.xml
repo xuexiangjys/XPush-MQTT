@@ -58,10 +58,10 @@
             android:value="640" />
 
         <!--********************************XPush各家推送的AppId注册地方************************************-->
-        <!--极光推送静态注册-->
+        <!--Mqtt推送静态注册， 这里注意修改连接的服务器地址-->
         <meta-data
             android:name="MQTT_HOST"
-            android:value="192.168.0.108" />
+            android:value="192.168.0.154" />
         <meta-data
             android:name="MQTT_PORT"
             android:value="1883" />
@@ -70,7 +70,7 @@
         <!--name格式：XPush_[PlatformName]_[PlatformCode]-->
         <!--value格式：对应客户端实体类的全类名路径-->
 
-        <!--如果引入了xpush-jpush库-->
+        <!--如果引入了xpush-mqtt Push库-->
         <meta-data
             android:name="XPush_MqttPush_1010"
             android:value="@string/xpush_mqttpush_client_name" />

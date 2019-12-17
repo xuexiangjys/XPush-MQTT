@@ -104,15 +104,21 @@ public class MqttPushClient implements IPushClient {
 
     @Override
     public void register() {
-        MqttPushAgent.getInstance().register(mOnMqttActionListener);
-        MqttPushAgent.getInstance().setOnMqttEventListener(mOnMqttEventListener);
+        if (MqttPushAgent.getInstance().register(mOnMqttActionListener)) {
+            MqttPushAgent.getInstance().setOnMqttEventListener(mOnMqttEventListener);
+        } else {
+            XPush.transmitCommandResult(MqttPushAgent.getContext(), TYPE_REGISTER, RESULT_ERROR, null, null, "推送已注册");
+        }
     }
 
 
     @Override
     public void unRegister() {
-        MqttPushAgent.getInstance().unRegister();
-        MqttPushAgent.getInstance().setOnMqttEventListener(null);
+        if (MqttPushAgent.getInstance().unRegister()) {
+            MqttPushAgent.getInstance().setOnMqttEventListener(null);
+        } else {
+            XPush.transmitCommandResult(MqttPushAgent.getContext(), TYPE_UNREGISTER, RESULT_ERROR, null, null, "推送尚未注册");
+        }
     }
 
     @Override
@@ -132,12 +138,16 @@ public class MqttPushClient implements IPushClient {
 
     @Override
     public void addTags(String... tag) {
-        MqttPushAgent.getInstance().addTags(tag);
+        if (!MqttPushAgent.getInstance().addTags(tag)) {
+            XPush.transmitCommandResult(MqttPushAgent.getContext(), TYPE_ADD_TAG, RESULT_ERROR, null, null, "推送尚未连接");
+        }
     }
 
     @Override
     public void deleteTags(String... tag) {
-        MqttPushAgent.getInstance().deleteTags(tag);
+        if (!MqttPushAgent.getInstance().deleteTags(tag)) {
+            XPush.transmitCommandResult(MqttPushAgent.getContext(), TYPE_DEL_TAG, RESULT_ERROR, null, null, "推送尚未连接");
+        }
     }
 
     @Override
@@ -189,16 +199,17 @@ public class MqttPushClient implements IPushClient {
 
         @Override
         public void onActionFailure(MqttAction action, IMqttToken actionToken, Throwable exception) {
+            String errorMessage = exception != null ? exception.getMessage() : "";
             switch (action) {
                 case CONNECT:
-                    XPush.transmitCommandResult(MqttPushAgent.getContext(), TYPE_REGISTER, RESULT_ERROR, null, null, exception.getMessage());
+                    XPush.transmitCommandResult(MqttPushAgent.getContext(), TYPE_REGISTER, RESULT_ERROR, null, null, errorMessage);
                     break;
                 case DISCONNECT:
-                    XPush.transmitCommandResult(MqttPushAgent.getContext(), TYPE_UNREGISTER, RESULT_ERROR, null, null, exception.getMessage());
+                    XPush.transmitCommandResult(MqttPushAgent.getContext(), TYPE_UNREGISTER, RESULT_ERROR, null, null, errorMessage);
                     break;
                 case SUBSCRIBE:
                 case UNSUBSCRIBE:
-                    XPush.transmitCommandResult(MqttPushAgent.getContext(), SUBSCRIBE.equals(action) ? TYPE_ADD_TAG : TYPE_DEL_TAG, RESULT_ERROR, null, null, exception.getMessage());
+                    XPush.transmitCommandResult(MqttPushAgent.getContext(), SUBSCRIBE.equals(action) ? TYPE_ADD_TAG : TYPE_DEL_TAG, RESULT_ERROR, null, null, errorMessage);
                     break;
                 default:
                     break;
@@ -216,13 +227,18 @@ public class MqttPushClient implements IPushClient {
         }
 
         @Override
+        public void onConnectComplete(boolean reconnect, String serverUri) {
+            super.onConnectComplete(reconnect, serverUri);
+        }
+
+        @Override
         public void onConnectionStatusChanged(ConnectionStatus oldStatus, ConnectionStatus newStatus) {
             super.onConnectionStatusChanged(oldStatus, newStatus);
             if (newStatus.equals(ConnectionStatus.CONNECTED)) {
                 XPushManager.get().notifyConnectStatusChanged(CONNECTED);
             } else if (newStatus.equals(ConnectionStatus.CONNECTING)) {
                 XPushManager.get().notifyConnectStatusChanged(CONNECTING);
-            } else if (newStatus.equals(ConnectionStatus.DISCONNECTED)) {
+            } else if (newStatus.equals(ConnectionStatus.DISCONNECTED) || newStatus.equals(ConnectionStatus.ERROR)) {
                 XPushManager.get().notifyConnectStatusChanged(DISCONNECT);
             }
 

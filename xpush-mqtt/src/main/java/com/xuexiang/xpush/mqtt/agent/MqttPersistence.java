@@ -61,7 +61,17 @@ public final class MqttPersistence {
      * @param context
      */
     public static void init(Context context) {
-        sSP = context.getSharedPreferences(MQTT_NAME, Context.MODE_PRIVATE);
+        if (sSP == null) {
+            sSP = context.getSharedPreferences(MQTT_NAME, Context.MODE_PRIVATE);
+        }
+    }
+
+    public static SharedPreferences getsSP() {
+        if (sSP == null) {
+            throw new IllegalArgumentException("MqttPersistence is not init," +
+                    "please call MqttPersistence.init(context) to init.");
+        }
+        return sSP;
     }
 
     /**
@@ -69,8 +79,8 @@ public final class MqttPersistence {
      *
      * @param clientId
      */
-    public static void saveClientId(String clientId) {
-        sSP.edit().putString(KEY_CLIENT_ID, clientId).apply();
+    public static void setClientId(String clientId) {
+        getsSP().edit().putString(KEY_CLIENT_ID, clientId).apply();
     }
 
     /**
@@ -78,8 +88,8 @@ public final class MqttPersistence {
      *
      * @param host
      */
-    public static void saveServerHost(String host) {
-        sSP.edit().putString(KEY_SERVER_HOST, host).apply();
+    public static void setServerHost(String host) {
+        getsSP().edit().putString(KEY_SERVER_HOST, host).apply();
     }
 
     /**
@@ -87,8 +97,8 @@ public final class MqttPersistence {
      *
      * @param port
      */
-    public static void saveServerPort(int port) {
-        sSP.edit().putInt(KEY_SERVER_PORT, port).apply();
+    public static void setServerPort(int port) {
+        getsSP().edit().putInt(KEY_SERVER_PORT, port).apply();
     }
 
     /**
@@ -96,8 +106,8 @@ public final class MqttPersistence {
      *
      * @param userName
      */
-    public static void saveUserName(String userName) {
-        sSP.edit().putString(KEY_USER_NAME, userName).apply();
+    public static void setUserName(String userName) {
+        getsSP().edit().putString(KEY_USER_NAME, userName).apply();
     }
 
     /**
@@ -105,8 +115,8 @@ public final class MqttPersistence {
      *
      * @param password
      */
-    public static void savePassword(String password) {
-        sSP.edit().putString(KEY_PASSWORD, password).apply();
+    public static void setPassword(String password) {
+        getsSP().edit().putString(KEY_PASSWORD, password).apply();
     }
 
     /**
@@ -114,8 +124,8 @@ public final class MqttPersistence {
      *
      * @param keepAlive
      */
-    public static void saveKeepAlive(int keepAlive) {
-        sSP.edit().putInt(KEY_KEEP_ALIVE, keepAlive).apply();
+    public static void setKeepAlive(int keepAlive) {
+        getsSP().edit().putInt(KEY_KEEP_ALIVE, keepAlive).apply();
     }
 
     /**
@@ -123,8 +133,8 @@ public final class MqttPersistence {
      *
      * @param timeout
      */
-    public static void saveTimeout(int timeout) {
-        sSP.edit().putInt(KEY_TIMEOUT, timeout).apply();
+    public static void setTimeout(int timeout) {
+        getsSP().edit().putInt(KEY_TIMEOUT, timeout).apply();
     }
 
     /**
@@ -132,8 +142,8 @@ public final class MqttPersistence {
      *
      * @param subscriptions
      */
-    public static void saveSubscriptions(List<Subscription> subscriptions) {
-        sSP.edit().putStringSet(KEY_SUBSCRIPTION_TOPIC, getSubscriptionSet(subscriptions)).apply();
+    public static void setSubscriptions(List<Subscription> subscriptions) {
+        getsSP().edit().putStringSet(KEY_SUBSCRIPTION_TOPIC, getSubscriptionSet(subscriptions)).apply();
     }
 
     public static Set<String> getSubscriptionSet(List<Subscription> subscriptions) {
@@ -149,39 +159,39 @@ public final class MqttPersistence {
     //==============================================//
 
     public static String getClientId() {
-        return sSP.getString(KEY_CLIENT_ID, "");
+        return getsSP().getString(KEY_CLIENT_ID, "");
     }
 
     public static String getServerHost() {
-        return sSP.getString(KEY_SERVER_HOST, "");
+        return getsSP().getString(KEY_SERVER_HOST, "");
     }
 
     public static int getServerPort() {
-        return sSP.getInt(KEY_SERVER_PORT, MqttCore.DEFAULT_MQTT_PORT);
+        return getsSP().getInt(KEY_SERVER_PORT, MqttCore.DEFAULT_MQTT_PORT);
     }
 
     public static String getUserName() {
-        return sSP.getString(KEY_USER_NAME, "");
+        return getsSP().getString(KEY_USER_NAME, "");
     }
 
     public static String getPassword() {
-        return sSP.getString(KEY_PASSWORD, "");
+        return getsSP().getString(KEY_PASSWORD, "");
     }
 
     public static int getKeepAlive() {
-        return sSP.getInt(KEY_PASSWORD, 0);
+        return getsSP().getInt(KEY_PASSWORD, 0);
     }
 
     public static int getTimeout() {
-        return sSP.getInt(KEY_TIMEOUT, 0);
+        return getsSP().getInt(KEY_TIMEOUT, 0);
     }
 
     public static Set<String> getSubscriptionSet() {
-        return sSP.getStringSet(KEY_SUBSCRIPTION_TOPIC, null);
+        return getsSP().getStringSet(KEY_SUBSCRIPTION_TOPIC, null);
     }
 
     public static List<Subscription> getSubscriptions() {
-        Set<String> topics = sSP.getStringSet(KEY_SUBSCRIPTION_TOPIC, null);
+        Set<String> topics = getsSP().getStringSet(KEY_SUBSCRIPTION_TOPIC, null);
         if (topics == null) {
             return null;
         }
@@ -192,7 +202,6 @@ public final class MqttPersistence {
         }
         return subscriptions;
     }
-
 
     /**
      * 获取mqtt连接配置信息

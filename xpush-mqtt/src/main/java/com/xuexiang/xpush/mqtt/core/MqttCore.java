@@ -306,7 +306,7 @@ public class MqttCore implements IMqttActionListener, MqttCallbackExtended {
     /**
      * 订阅所有主题
      */
-    private void registerAllSubscriptions() {
+    public void registerAllSubscriptions() {
         for (Subscription subscription : mSubscriptions.values()) {
             subscribe(subscription, true);
         }
@@ -330,7 +330,7 @@ public class MqttCore implements IMqttActionListener, MqttCallbackExtended {
      * @return
      */
     public boolean connect() {
-        if (mClient == null) {
+        if (mClient == null || mClient.isConnected()) {
             return false;
         }
 
@@ -351,7 +351,7 @@ public class MqttCore implements IMqttActionListener, MqttCallbackExtended {
      * @return
      */
     public void connect(IMqttActionListener listener) {
-        if (mClient == null) {
+        if (mClient == null || mClient.isConnected()) {
             return;
         }
         try {
@@ -368,7 +368,7 @@ public class MqttCore implements IMqttActionListener, MqttCallbackExtended {
      * @return
      */
     public boolean disconnect() {
-        if (mClient == null) {
+        if (!isConnected()) {
             return false;
         }
 
@@ -388,7 +388,7 @@ public class MqttCore implements IMqttActionListener, MqttCallbackExtended {
      * @return
      */
     public void disconnect(IMqttActionListener listener) {
-        if (mClient == null) {
+        if (!isConnected()) {
             return;
         }
 
@@ -407,10 +407,10 @@ public class MqttCore implements IMqttActionListener, MqttCallbackExtended {
      * @param listener     动作监听
      */
     public void subscribe(Subscription subscription, IMqttActionListener listener) {
-        if (mClient == null || subscription == null) {
+        if (!isConnected()) {
             return;
         }
-        if (TextUtils.isEmpty(subscription.getTopic())) {
+        if (subscription == null || TextUtils.isEmpty(subscription.getTopic())) {
             return;
         }
 
@@ -429,10 +429,10 @@ public class MqttCore implements IMqttActionListener, MqttCallbackExtended {
      * @param messageListener 消息监听
      */
     public void subscribe(Subscription subscription, IMqttActionListener actionListener, IMqttMessageListener messageListener) {
-        if (mClient == null || subscription == null) {
+        if (!isConnected()) {
             return;
         }
-        if (TextUtils.isEmpty(subscription.getTopic())) {
+        if (subscription == null || TextUtils.isEmpty(subscription.getTopic())) {
             return;
         }
 
@@ -450,10 +450,10 @@ public class MqttCore implements IMqttActionListener, MqttCallbackExtended {
      * @param listener     动作监听
      */
     public void unsubscribe(Subscription subscription, IMqttActionListener listener) {
-        if (mClient == null || subscription == null) {
+        if (!isConnected()) {
             return;
         }
-        if (TextUtils.isEmpty(subscription.getTopic())) {
+        if (subscription == null || TextUtils.isEmpty(subscription.getTopic())) {
             return;
         }
 
@@ -471,10 +471,10 @@ public class MqttCore implements IMqttActionListener, MqttCallbackExtended {
      * @param listener       动作监听
      */
     public void publish(PublishMessage publishMessage, IMqttActionListener listener) {
-        if (mClient == null || publishMessage == null) {
+        if (!isConnected()) {
             return;
         }
-        if (TextUtils.isEmpty(publishMessage.getTopic())) {
+        if (publishMessage == null || TextUtils.isEmpty(publishMessage.getTopic())) {
             return;
         }
 
@@ -547,10 +547,10 @@ public class MqttCore implements IMqttActionListener, MqttCallbackExtended {
      * @param isSilent     是否静默设置，没有回调
      */
     private boolean subscribe(Subscription subscription, boolean isSilent) {
-        if (mClient == null || subscription == null) {
+        if (!isConnected()) {
             return false;
         }
-        if (TextUtils.isEmpty(subscription.getTopic())) {
+        if (subscription == null || TextUtils.isEmpty(subscription.getTopic())) {
             return false;
         }
 
@@ -584,10 +584,10 @@ public class MqttCore implements IMqttActionListener, MqttCallbackExtended {
      * @param isSilent     是否静默设置，没有回调
      */
     private boolean unsubscribe(Subscription subscription, boolean isSilent) {
-        if (mClient == null || subscription == null) {
+        if (!isConnected()) {
             return false;
         }
-        if (TextUtils.isEmpty(subscription.getTopic())) {
+        if (subscription == null || TextUtils.isEmpty(subscription.getTopic())) {
             return false;
         }
 
@@ -621,10 +621,10 @@ public class MqttCore implements IMqttActionListener, MqttCallbackExtended {
      * @param publishMessage
      */
     public boolean publish(PublishMessage publishMessage) {
-        if (mClient == null || publishMessage == null) {
+        if (!isConnected()) {
             return false;
         }
-        if (TextUtils.isEmpty(publishMessage.getTopic())) {
+        if (publishMessage == null || TextUtils.isEmpty(publishMessage.getTopic())) {
             return false;
         }
 
@@ -648,8 +648,6 @@ public class MqttCore implements IMqttActionListener, MqttCallbackExtended {
         switch (action) {
             case CONNECT:
                 changeConnectionStatus(ConnectionStatus.CONNECTED);
-                //连接成功后注册订阅
-                registerAllSubscriptions();
                 break;
             case DISCONNECT:
                 changeConnectionStatus(ConnectionStatus.DISCONNECTED);
@@ -723,6 +721,9 @@ public class MqttCore implements IMqttActionListener, MqttCallbackExtended {
     @Override
     public void connectComplete(boolean reconnect, String serverURI) {
         changeConnectionStatus(ConnectionStatus.CONNECTED);
+        //连接成功后注册订阅
+        registerAllSubscriptions();
+
         if (mOnMqttEventListener != null) {
             mOnMqttEventListener.onConnectComplete(reconnect, serverURI);
         }

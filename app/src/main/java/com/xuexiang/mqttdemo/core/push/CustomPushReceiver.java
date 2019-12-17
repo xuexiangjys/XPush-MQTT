@@ -21,12 +21,12 @@ import android.content.Context;
 import android.content.Intent;
 
 import com.xuexiang.mqttdemo.activity.TestActivity;
+import com.xuexiang.mqttdemo.utils.XToastUtils;
 import com.xuexiang.xpush.core.receiver.impl.XPushReceiver;
 import com.xuexiang.xpush.entity.XPushCommand;
 import com.xuexiang.xpush.entity.XPushMsg;
 import com.xuexiang.xutil.app.ActivityUtils;
 import com.xuexiang.xutil.app.IntentUtils;
-import com.xuexiang.xutil.tip.ToastUtils;
 
 import static com.xuexiang.mqttdemo.activity.TestActivity.KEY_PARAM_INT;
 import static com.xuexiang.mqttdemo.activity.TestActivity.KEY_PARAM_STRING;
@@ -52,7 +52,14 @@ public class CustomPushReceiver extends XPushReceiver {
     @Override
     public void onCommandResult(Context context, XPushCommand command) {
         super.onCommandResult(context, command);
-        ToastUtils.toast(command.getDescription());
+        XToastUtils.toast(getCommandDescription(command));
+    }
+
+    /**
+     * @return 获取命令的描述信息
+     */
+    public String getCommandDescription(XPushCommand command) {
+        return command.getTypeName(command.getType()) + (command.isSuccess() ? "成功：" + command.getContent() : "失败:" + command.getError());
     }
 
 }
