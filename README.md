@@ -1,6 +1,6 @@
-# MQTTDemo
+# XPush-MQTT
 
-MQTT在Android上的使用
+MQTT在Android上的使用，目前已集成了XPush
 
 ## 关于我
 
