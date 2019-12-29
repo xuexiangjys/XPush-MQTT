@@ -629,7 +629,7 @@ public class MqttCore implements IMqttActionListener, MqttCallbackExtended {
         }
 
         try {
-            MqttAction action = MqttAction.SUBSCRIBE.setArgs(publishMessage);
+            MqttAction action = MqttAction.PUBLISH.setArgs(publishMessage);
             mClient.publish(publishMessage.getTopic(), publishMessage.getMessage().getBytes(), publishMessage.getQos(), publishMessage.isRetain(), action, this);
             return true;
         } catch (MqttException e) {
