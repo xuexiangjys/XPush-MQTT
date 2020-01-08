@@ -19,12 +19,15 @@ package com.xuexiang.mqttdemo.widget;
 
 import android.content.Context;
 
+import com.xuexiang.mqttdemo.ActionRequest;
 import com.xuexiang.mqttdemo.R;
 import com.xuexiang.xpush.mqtt.core.entity.PublishMessage;
 import com.xuexiang.xui.utils.KeyboardUtils;
 import com.xuexiang.xui.widget.dialog.materialdialog.CustomMaterialDialog;
 import com.xuexiang.xui.widget.dialog.materialdialog.MaterialDialog;
 import com.xuexiang.xui.widget.edittext.materialedittext.MaterialEditText;
+
+import static com.xuexiang.mqttdemo.fragment.OperationFragment.TOPIC_PROTOBUF;
 
 /**
  * @author xuexiang
@@ -57,7 +60,13 @@ public class PublishDialog extends CustomMaterialDialog {
                     if (metTopic.validate() && metMessage.validate()) {
                         KeyboardUtils.forceCloseKeyboard(metMessage);
                         if (mListener != null) {
-                            mListener.onPublish(PublishMessage.get(metTopic.getEditValue(), metMessage.getEditValue()));
+                            String topic = metTopic.getEditValue();
+                            if (TOPIC_PROTOBUF.equals(topic)) {
+                                ActionRequest actionRequest = ActionRequest.newBuilder().setMessage(metMessage.getEditValue()).build();
+                                mListener.onPublish(PublishMessage.wrap(topic, actionRequest.toByteArray()));
+                            } else {
+                                mListener.onPublish(PublishMessage.wrap(topic, metMessage.getEditValue()));
+                            }
                         }
                         dialog.dismiss();
                     }

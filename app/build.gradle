@@ -24,7 +24,7 @@ android {
 
         javaCompileOptions {
             annotationProcessorOptions {
-                arguments = [ moduleName : project.getName() ]
+                arguments = [moduleName: project.getName()]
             }
         }
     }
@@ -87,6 +87,7 @@ android {
     }
 }
 
+
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     testImplementation deps.junit
@@ -98,7 +99,6 @@ dependencies {
     implementation 'com.github.xuexiangjys.XPush:xpush-core:1.0.1'
     implementation project(path: ':xpush-mqtt')
     implementation 'org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.2.0'
-
 
     //XUI框架
     implementation 'com.github.xuexiangjys:XUI:1.1.1'
@@ -116,8 +116,8 @@ dependencies {
     //腾讯的键值对存储mmkv
     implementation 'com.tencent:mmkv:1.0.22'
     //XPage
-    implementation 'com.github.xuexiangjys.XPage:xpage-lib:2.2.8'
-    annotationProcessor 'com.github.xuexiangjys.XPage:xpage-compiler:2.2.8'
+    implementation 'com.github.xuexiangjys.XPage:xpage-lib:2.2.9'
+    annotationProcessor 'com.github.xuexiangjys.XPage:xpage-compiler:2.2.9'
     //页面路由
     implementation 'com.github.xuexiangjys.XRouter:xrouter-runtime:1.0.1'
     annotationProcessor 'com.github.xuexiangjys.XRouter:xrouter-compiler:1.0.1'
@@ -139,4 +139,6 @@ dependencies {
 
 //walle多渠道打包
 apply from: 'multiple-channel.gradle'
+//protobuf
+apply from: 'protobuf.gradle'
 

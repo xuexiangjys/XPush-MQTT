@@ -25,6 +25,9 @@ import android.widget.Button;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.protobuf.InvalidProtocolBufferException;
+import com.xuexiang.mqttdemo.ActionRequest;
+import com.xuexiang.mqttdemo.ActionResponse;
 import com.xuexiang.mqttdemo.R;
 import com.xuexiang.mqttdemo.core.BaseFragment;
 import com.xuexiang.mqttdemo.utils.MMKVUtils;
@@ -62,6 +65,8 @@ import static android.app.Activity.RESULT_OK;
 @Page(name = "Mqtt详细操作\n连接、断开、订阅、发布等操作")
 public class OperationFragment extends BaseFragment implements RecyclerViewHolder.OnItemClickListener<Subscription>, PublishDialog.OnPublishListener {
     private static final int REQUEST_CODE_SETTING = 1000;
+
+    public static final String TOPIC_PROTOBUF = "protobuf";
 
     @BindView(R.id.btn_connect)
     Button btnConnect;
@@ -175,7 +180,18 @@ public class OperationFragment extends BaseFragment implements RecyclerViewHolde
             mMqttCore.setOnMqttEventListener(new MqttEventListenerAdapter() {
                 @Override
                 public void onMessageReceived(String topic, MqttMessage message) {
-                    XToastUtils.info("收到 [topic]:" + topic + "[message]:" + message.toString());
+                    if (TOPIC_PROTOBUF.equals(topic)) {
+                        try {
+                            ActionResponse response = ActionResponse.parseFrom(message.getPayload());
+                            if (response != null) {
+                                XToastUtils.info("收到 [topic]:" + topic + "[ActionResponse]:" + response.getMessage());
+                            }
+                        } catch (InvalidProtocolBufferException e) {
+                            e.printStackTrace();
+                        }
+                    } else {
+                        XToastUtils.info("收到 [topic]:" + topic + "[message]:" + message.toString());
+                    }
                 }
 
                 @Override

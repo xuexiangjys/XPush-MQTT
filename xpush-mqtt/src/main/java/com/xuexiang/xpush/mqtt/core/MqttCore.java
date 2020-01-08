@@ -133,7 +133,7 @@ public class MqttCore implements IMqttActionListener, MqttCallbackExtended {
             options.setKeepAliveInterval(builder.keepAlive);
         }
         if (builder.willMessage != null) {
-            options.setWill(builder.willMessage.getTopic(), builder.willMessage.getMessage().getBytes(), builder.willMessage.getQos(), builder.willMessage.isRetain());
+            options.setWill(builder.willMessage.getTopic(), builder.willMessage.getPayload(), builder.willMessage.getQos(), builder.willMessage.isRetain());
         }
         return options;
     }
@@ -479,7 +479,7 @@ public class MqttCore implements IMqttActionListener, MqttCallbackExtended {
         }
 
         try {
-            mClient.publish(publishMessage.getTopic(), publishMessage.getMessage().getBytes(), publishMessage.getQos(), publishMessage.isRetain(), null, listener);
+            mClient.publish(publishMessage.getTopic(), publishMessage.getPayload(), publishMessage.getQos(), publishMessage.isRetain(), null, listener);
         } catch (MqttException e) {
             e.printStackTrace();
         }
@@ -612,7 +612,7 @@ public class MqttCore implements IMqttActionListener, MqttCallbackExtended {
      * @param message 消息内容
      */
     public boolean publish(String topic, String message) {
-        return publish(PublishMessage.get(topic, message));
+        return publish(PublishMessage.wrap(topic, message));
     }
 
     /**
@@ -630,7 +630,7 @@ public class MqttCore implements IMqttActionListener, MqttCallbackExtended {
 
         try {
             MqttAction action = MqttAction.PUBLISH.setArgs(publishMessage);
-            mClient.publish(publishMessage.getTopic(), publishMessage.getMessage().getBytes(), publishMessage.getQos(), publishMessage.isRetain(), action, this);
+            mClient.publish(publishMessage.getTopic(), publishMessage.getPayload(), publishMessage.getQos(), publishMessage.isRetain(), action, this);
             return true;
         } catch (MqttException e) {
             e.printStackTrace();

@@ -20,6 +20,8 @@ package com.xuexiang.xpush.mqtt.core.entity;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import androidx.annotation.NonNull;
+
 /**
  * 发布的主题消息
  *
@@ -33,9 +35,9 @@ public class PublishMessage implements Parcelable {
      */
     private String mTopic;
     /**
-     * 消息
+     * 数据载体
      */
-    private String mMessage;
+    private byte[] mPayload;
     /**
      * 请求质量
      */
@@ -45,9 +47,10 @@ public class PublishMessage implements Parcelable {
      */
     private boolean mRetain;
 
+
     protected PublishMessage(Parcel in) {
         mTopic = in.readString();
-        mMessage = in.readString();
+        mPayload = in.createByteArray();
         mQos = in.readInt();
         mRetain = in.readByte() != 0;
     }
@@ -64,13 +67,22 @@ public class PublishMessage implements Parcelable {
         }
     };
 
-    public static PublishMessage get(String topic, String message) {
+    public static PublishMessage wrap(@NonNull String topic, @NonNull String message) {
         return new PublishMessage(topic, message);
     }
 
-    public PublishMessage(String topic, String message) {
+    public static PublishMessage wrap(@NonNull String topic, @NonNull byte[] payload) {
+        return new PublishMessage(topic, payload);
+    }
+
+    public PublishMessage(@NonNull String topic, @NonNull String message) {
         mTopic = topic;
-        mMessage = message;
+        mPayload = message.getBytes();
+    }
+
+    public PublishMessage(@NonNull String topic, @NonNull byte[] payload) {
+        mTopic = topic;
+        mPayload = payload;
     }
 
     public String getTopic() {
@@ -83,11 +95,20 @@ public class PublishMessage implements Parcelable {
     }
 
     public String getMessage() {
-        return mMessage;
+        return new String(mPayload);
     }
 
-    public PublishMessage setMessage(String message) {
-        mMessage = message;
+    public byte[] getPayload() {
+        return mPayload;
+    }
+
+    public PublishMessage setMessage(@NonNull String message) {
+        mPayload = message.getBytes();
+        return this;
+    }
+
+    public PublishMessage setPayload(byte[] payload) {
+        mPayload = payload;
         return this;
     }
 
@@ -111,8 +132,9 @@ public class PublishMessage implements Parcelable {
 
     @Override
     public String toString() {
-        return "[" + mTopic + "] " + mMessage;
+        return "[" + mTopic + "] " + getMessage();
     }
+
 
     @Override
     public int describeContents() {
@@ -122,7 +144,7 @@ public class PublishMessage implements Parcelable {
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(mTopic);
-        dest.writeString(mMessage);
+        dest.writeByteArray(mPayload);
         dest.writeInt(mQos);
         dest.writeByte((byte) (mRetain ? 1 : 0));
     }

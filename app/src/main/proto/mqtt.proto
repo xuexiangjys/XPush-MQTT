@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package mqtt;
+
+option java_multiple_files = true;
+option java_package = "com.xuexiang.mqttdemo";
+option java_outer_classname = "MqttProto";
+option objc_class_prefix = "Mqtt";
+
+option cc_generic_services = true;
+
+message ActionRequest {
+    string message = 1;
+};
+
+message ActionResponse {
+    string message = 1;
+};
