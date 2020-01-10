@@ -140,5 +140,5 @@ dependencies {
 //walle多渠道打包
 apply from: 'multiple-channel.gradle'
 //protobuf
-apply from: 'protobuf.gradle'
+apply from: 'protobuf-lite.gradle'
 

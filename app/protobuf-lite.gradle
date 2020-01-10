@@ -17,7 +17,6 @@
 
 apply plugin: 'com.google.protobuf'
 
-
 protobuf {
     protoc { artifact = 'com.google.protobuf:protoc:3.6.1' }
     plugins {
@@ -32,9 +31,8 @@ protobuf {
     }
 }
 
-project.configurations.all { configuration ->
-    def name = configuration.name
-    if (name != "implementation" && name != "compile") {
+project.configurations.each { configuration ->
+    if (configuration.name != "implementation") {
         return
     }
     //为Project加入protobuf依赖
